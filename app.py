@@ -5,6 +5,8 @@ from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
 import uuid
+import base64
+import json
 
 st.set_page_config(page_title="Roesel Transportes", page_icon="🚛", layout="wide")
 
@@ -15,6 +17,7 @@ st.markdown("""<style>
 
 SUPABASE_URL = "https://lmcefcmjatnixrsggyvz.supabase.co"
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+ANTHROPIC_KEY = st.secrets.get("ANTHROPIC_KEY", "")
 HEADERS = {"apikey":SUPABASE_KEY,"Authorization":f"Bearer {SUPABASE_KEY}","Content-Type":"application/json","Prefer":"return=representation"}
 
 def sb_get(t,p=""):
@@ -41,6 +44,66 @@ def sb_delete(t,f):
         r=requests.delete(f"{SUPABASE_URL}/rest/v1/{t}?{f}",headers={**HEADERS,"Prefer":""},timeout=10)
         return r.ok
     except: return False
+
+def ler_contrato_ia(imagem_bytes, media_type="image/jpeg"):
+    if not ANTHROPIC_KEY:
+        return None, "Chave Anthropic não configurada"
+    
+    b64 = base64.b64encode(imagem_bytes).decode("utf-8")
+    
+    PROMPT = """Você está analisando um contrato de transporte rodoviário brasileiro.
+Extraia os campos e retorne APENAS JSON puro, sem markdown.
+
+CAMPOS:
+- cliente: AUTOPORT, SADA, VIX, DACUNHA, BRAZUL, TRANSAUTO, TRANSZERO ou OUTRO
+- motorista: nome completo em MAIUSCULAS
+- placa: placa do caminhao/cavalo
+- frota: numero da frota
+- contrato: numero do contrato
+- data: DD/MM/AAAA
+- fat_bruto: valor numerico do frete (sem R$, com ponto decimal)
+- chapa: valor numerico, 0 se nao houver
+- destino: cidade/UF destino
+- qtd_veiculos: numero inteiro, 0 se nao encontrar
+- dt_pagamento: DD/MM/AAAA ou vazio
+
+Retorne SOMENTE: {"cliente":"","motorista":"","placa":"","frota":"","contrato":"","data":"","fat_bruto":0,"chapa":0,"destino":"","qtd_veiculos":0,"dt_pagamento":""}"""
+
+    try:
+        resp = requests.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": ANTHROPIC_KEY,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json"
+            },
+            json={
+                "model": "claude-sonnet-4-20250514",
+                "max_tokens": 1000,
+                "messages": [{
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": b64}},
+                        {"type": "text", "text": PROMPT}
+                    ]
+                }]
+            },
+            timeout=30
+        )
+        if not resp.ok:
+            return None, f"Erro API: {resp.status_code}"
+        
+        texto = resp.json()["content"][0]["text"]
+        clean = texto.replace("```json","").replace("```","").strip()
+        # Extrair JSON mesmo com texto extra
+        start = clean.find("{")
+        end = clean.rfind("}") + 1
+        if start >= 0 and end > start:
+            dados = json.loads(clean[start:end])
+            return dados, None
+        return None, "Não foi possível extrair os dados"
+    except Exception as e:
+        return None, str(e)
 
 MESES=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"]
 META=127000
@@ -154,15 +217,63 @@ if aba=="📊 Dashboard":
 elif aba=="➕ Novo Contrato":
     if perm not in ["total","equipe"]: st.warning("Sem permissão."); st.stop()
     st.title("➕ Novo Contrato")
+    
+    # Leitura por IA
+    with st.expander("📷 Importar Contrato por Foto/PDF (IA)", expanded=False):
+        uploaded = st.file_uploader("Selecione a foto ou PDF do contrato", 
+            type=["jpg","jpeg","png","webp","pdf"],
+            help="A IA vai ler o contrato e preencher os campos automaticamente")
+        
+        if uploaded:
+            col_prev, col_btn = st.columns([2,1])
+            with col_prev:
+                if uploaded.type != "application/pdf":
+                    st.image(uploaded, caption="Contrato carregado", use_container_width=True)
+                else:
+                    st.success(f"📄 PDF carregado: {uploaded.name}")
+            with col_btn:
+                if st.button("🤖 Ler com IA", use_container_width=True):
+                    with st.spinner("Analisando contrato..."):
+                        dados_ia, erro = ler_contrato_ia(uploaded.read(), uploaded.type)
+                    if erro:
+                        st.error(f"Erro: {erro}")
+                    elif dados_ia:
+                        st.session_state["dados_ia"] = dados_ia
+                        st.success("✅ Contrato lido! Dados preenchidos abaixo.")
+                        st.rerun()
+        
+        if not ANTHROPIC_KEY:
+            st.warning("⚠️ Chave Anthropic não configurada. Adicione ANTHROPIC_KEY nos Secrets do Streamlit.")
+    
+    # Pegar dados da IA se existirem
+    ia = st.session_state.get("dados_ia", {})
+    
     with st.form("form_novo",clear_on_submit=True):
         c1,c2,c3=st.columns(3)
-        mot=c1.selectbox("Motorista *",MOTORISTAS); cli=c2.selectbox("Cliente *",CLIENTES); placa=c3.text_input("Placa *","").upper()
+        # Índices para selectbox com dados da IA
+        mot_idx = MOTORISTAS.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS else 0
+        cli_idx = CLIENTES.index(ia.get("cliente","")) if ia.get("cliente","") in CLIENTES else 0
+        
+        mot=c1.selectbox("Motorista *",MOTORISTAS,index=mot_idx)
+        cli=c2.selectbox("Cliente *",CLIENTES,index=cli_idx)
+        placa=c3.text_input("Placa *",ia.get("placa","")).upper()
         c4,c5,c6=st.columns(3)
-        cont=c4.text_input("Nº Contrato *",""); frota=c5.text_input("Frota",""); data_v=c6.date_input("Data *",datetime.now())
+        cont=c4.text_input("Nº Contrato *",ia.get("contrato",""))
+        frota=c5.text_input("Frota",ia.get("frota",""))
+        # Parse data da IA
+        data_ia = datetime.now()
+        if ia.get("data"):
+            try:
+                data_ia = datetime.strptime(ia["data"], "%d/%m/%Y")
+            except: pass
+        data_v=c6.date_input("Data *",data_ia)
         c7,c8,c9=st.columns(3)
-        fat=c7.number_input("Fat. Bruto (R$) *",0.0,step=100.0,format="%.2f"); chapa=c8.number_input("Chapa (R$)",0.0,step=50.0,format="%.2f"); qtd=c9.number_input("Qtd Veículos",0,step=1)
+        fat=c7.number_input("Fat. Bruto (R$) *",float(ia.get("fat_bruto",0)),step=100.0,format="%.2f")
+        chapa=c8.number_input("Chapa (R$)",float(ia.get("chapa",0)),step=50.0,format="%.2f")
+        qtd=c9.number_input("Qtd Veículos",int(ia.get("qtd_veiculos",0)),step=1)
         c10,c11=st.columns(2)
-        dest=c10.text_input("Destino","").upper(); status=c11.selectbox("Status",STATUS_OPTS)
+        dest=c10.text_input("Destino",ia.get("destino","")).upper()
+        status=c11.selectbox("Status",STATUS_OPTS)
         c12,c13=st.columns(2)
         dt_pag=c12.date_input("Dt. Pagamento",value=None); adpago=c13.checkbox("Adiantamento Pago?")
         obs=st.text_area("Observação","",height=80)
@@ -173,7 +284,7 @@ elif aba=="➕ Novo Contrato":
             if not cont or not fat: st.error("Preencha os campos obrigatórios!")
             else:
                 novo={"id":str(uuid.uuid4()),"motorista":mot,"cliente":cli,"placa":placa,"frota":frota,"contrato":cont,"data":str(data_v),"fat_bruto":fat,"chapa":chapa,"destino":dest,"qtd_veiculos":int(qtd),"adiantamento_pago":adpago,"dt_pagamento":str(dt_pag) if dt_pag else None,"status":status,"obs":obs}
-                if sb_post("contratos",novo): st.success(f"✅ Contrato {cont} salvo!"); st.cache_data.clear(); st.rerun()
+                if sb_post("contratos",novo): st.success(f"✅ Contrato {cont} salvo!"); st.cache_data.clear(); st.session_state.pop('dados_ia', None); st.rerun()
                 else: st.error("Erro ao salvar!")
 
 elif aba=="📋 Contratos":
