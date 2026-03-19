@@ -26,9 +26,23 @@ st.markdown("""
 
 * { font-family: 'DM Sans', sans-serif !important; box-sizing: border-box; }
 
-/* Fundo principal */
+/* Fundo principal — marca d'água com as cores originais da logo */
 .stApp {
     background-color: #F0F2F6 !important;
+    background-image: url("data:image/jpeg;base64,{LOGO_B64}") !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: 500px auto !important;
+    background-attachment: fixed !important;
+}
+.stApp::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    /* Overlay claro preservando as cores da logo */
+    background-color: rgba(240,242,246,0.91);
+    z-index: 0;
+    pointer-events: none;
 }
 
 /* ── SIDEBAR ── */
@@ -491,11 +505,6 @@ if not st.session_state.ok:
     /* Fundo da tela de login com marca d'água da logo */
     .stApp {{
         background-color: #0F1624 !important;
-        background-image: url("data:image/jpeg;base64,{LOGO_B64}") !important;
-        background-repeat: no-repeat !important;
-        background-position: center center !important;
-        background-size: 640px auto !important;
-        background-attachment: fixed !important;
     }}
     /* Overlay escuro sobre a marca d'água */
     .stApp::before {{
@@ -576,8 +585,9 @@ if not st.session_state.ok:
                 '>
                     <img src="data:image/jpeg;base64,{LOGO_B64}"
                          style='max-width:200px;width:100%;display:block;
-                                filter:brightness(1.1) contrast(1.05);
-                                border-radius:6px;'>
+                                filter:brightness(0) invert(1);
+                                border-radius:6px;
+                                opacity:0.95;'>
                 </div>
 
                 <!-- Título -->
