@@ -9,149 +9,223 @@ from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
 
-st.set_page_config(page_title="Roesel Transportes", page_icon="🚛", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="Roesel Transportes",
+    page_icon="🚛",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# ── DARK MODE CSS ──────────────────────────────────────────────────
+# ── CSS PROFISSIONAL (ESTILO DASHBOARD) ────────────────────────────
 st.markdown("""
 <style>
-/* Fundo geral */
-.stApp { background-color: #0D1117; color: #E6EDF3; }
-[data-testid="stSidebar"] { background: #161B22; border-right: 1px solid #30363D; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* Métricas */
-[data-testid="stMetric"] {
-    background: #161B22;
-    border: 1px solid #30363D;
-    border-radius: 12px;
-    padding: 16px 20px;
+* { font-family: 'Inter', sans-serif !important; box-sizing: border-box; }
+
+/* Fundo principal */
+.stApp { background: #F4F6F9 !important; }
+
+/* ── SIDEBAR ── */
+[data-testid="stSidebar"] {
+    background: #1A3A5C !important;
+    border-right: none !important;
+    min-width: 220px !important;
+    max-width: 220px !important;
 }
-[data-testid="stMetricValue"] { color: #E05252 !important; font-size: 1.5rem !important; font-weight: 700 !important; }
-[data-testid="stMetricLabel"] { color: #8B949E !important; font-size: 0.75rem !important; text-transform: uppercase; letter-spacing: 0.05em; }
-
-/* Inputs */
-.stTextInput input, .stSelectbox select, .stNumberInput input, .stTextArea textarea {
-    background: #21262D !important; color: #E6EDF3 !important;
-    border: 1px solid #30363D !important; border-radius: 8px !important;
+[data-testid="stSidebar"] * { color: #B8CDE0 !important; }
+[data-testid="stSidebar"] .stRadio label {
+    padding: 10px 16px !important;
+    border-radius: 8px !important;
+    display: block !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.15s !important;
+    color: #B8CDE0 !important;
 }
-.stSelectbox > div > div { background: #21262D !important; border: 1px solid #30363D !important; }
-[data-testid="stSelectbox"] > div > div { background: #21262D !important; }
+[data-testid="stSidebar"] .stRadio label:hover {
+    background: rgba(255,255,255,0.08) !important;
+    color: white !important;
+}
+[data-testid="stSidebar"] [data-baseweb="radio"] input:checked + div + label,
+[data-testid="stSidebar"] [data-baseweb="radio"] input:checked ~ label {
+    background: rgba(255,255,255,0.15) !important;
+    color: white !important;
+}
+[data-testid="stSidebar"] .stSelectbox > div > div {
+    background: rgba(255,255,255,0.1) !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    color: white !important;
+}
+[data-testid="stSidebar"] .stButton > button {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    color: #B8CDE0 !important;
+    font-size: 13px !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(255,255,255,0.15) !important;
+    color: white !important;
+}
+[data-testid="stSidebar"] hr { border-color: rgba(255,255,255,0.15) !important; }
 
-/* Botões */
+/* ── TOPBAR ── */
+[data-testid="stHeader"] { background: white !important; border-bottom: 1px solid #E5E9F0; }
+
+/* ── CONTEÚDO PRINCIPAL ── */
+.main .block-container {
+    padding: 24px 28px !important;
+    max-width: 100% !important;
+}
+
+/* ── CARDS MÉTRICA ── */
+.metric-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px 22px;
+    border: 1px solid #E5E9F0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s;
+}
+.metric-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+.metric-label {
+    font-size: 12px; font-weight: 600; color: #8896A7;
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+}
+.metric-value {
+    font-size: 32px; font-weight: 800; color: #1A3A5C; line-height: 1;
+}
+.metric-delta {
+    font-size: 12px; font-weight: 600; margin-top: 6px;
+    display: flex; align-items: center; gap: 4px;
+}
+.delta-up { color: #2ECC71; }
+.delta-down { color: #E74C3C; }
+
+/* ── CARDS PAINEL ── */
+.panel-card {
+    background: white;
+    border-radius: 10px;
+    padding: 24px;
+    border: 1px solid #E5E9F0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    height: 100%;
+}
+.panel-title {
+    font-size: 15px; font-weight: 700; color: #1A3A5C;
+    margin-bottom: 20px;
+}
+
+/* ── TABELA ── */
+[data-testid="stDataFrame"] {
+    border: 1px solid #E5E9F0 !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04) !important;
+    background: white !important;
+}
+[data-testid="stDataFrame"] table { background: white !important; }
+[data-testid="stDataFrame"] thead th {
+    background: #F4F6F9 !important;
+    color: #8896A7 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+[data-testid="stDataFrame"] tbody tr:hover td {
+    background: #F8FAFC !important;
+}
+
+/* ── INPUTS ── */
+.stTextInput input, .stNumberInput input, .stTextArea textarea,
+.stSelectbox > div > div, [data-testid="stSelectbox"] > div > div {
+    background: white !important;
+    border: 1px solid #D1D9E6 !important;
+    border-radius: 8px !important;
+    color: #1A3A5C !important;
+    font-size: 14px !important;
+}
+.stTextInput input:focus, .stNumberInput input:focus {
+    border-color: #1A7FC1 !important;
+    box-shadow: 0 0 0 3px rgba(26,127,193,0.15) !important;
+}
+
+/* ── BOTÕES ── */
 .stButton > button {
-    background: linear-gradient(135deg, #8B1A1A, #C0392B) !important;
-    color: white !important; border: none !important;
-    border-radius: 8px !important; font-weight: 600 !important;
-    transition: all 0.2s !important;
+    background: #1A7FC1 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    padding: 10px 20px !important;
+    transition: all 0.15s !important;
 }
-.stButton > button:hover { opacity: 0.85 !important; transform: translateY(-1px) !important; }
-
-/* Botão secundário */
+.stButton > button:hover {
+    background: #1565A0 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(26,127,193,0.3) !important;
+}
 button[kind="secondary"] {
-    background: #21262D !important; color: #F85149 !important;
-    border: 1px solid #F85149 !important;
+    background: white !important;
+    color: #E74C3C !important;
+    border: 1px solid #E74C3C !important;
 }
 
-/* Tabelas */
-[data-testid="stDataFrame"] { border: 1px solid #30363D; border-radius: 12px; overflow: hidden; }
-.dataframe { background: #161B22 !important; }
+/* ── DOWNLOAD BUTTON ── */
+.stDownloadButton > button {
+    background: white !important;
+    color: #2ECC71 !important;
+    border: 1px solid #2ECC71 !important;
+    border-radius: 8px !important;
+}
 
-/* Expander */
+/* ── FORMS ── */
+[data-testid="stForm"] {
+    background: white !important;
+    border: 1px solid #E5E9F0 !important;
+    border-radius: 12px !important;
+    padding: 24px !important;
+}
+
+/* ── EXPANDER ── */
 .streamlit-expanderHeader {
-    background: #161B22 !important; border: 1px solid #30363D !important;
-    border-radius: 8px !important; color: #E6EDF3 !important;
+    background: white !important;
+    border: 1px solid #E5E9F0 !important;
+    border-radius: 8px !important;
+    color: #1A3A5C !important;
+    font-weight: 600 !important;
 }
-.streamlit-expanderContent { background: #161B22 !important; border: 1px solid #30363D !important; }
+.streamlit-expanderContent {
+    background: #FAFBFC !important;
+    border: 1px solid #E5E9F0 !important;
+}
+
+/* ── ALERTS ── */
+.stAlert { border-radius: 8px !important; }
+[data-testid="stSuccess"] { background: #F0FFF4 !important; border-color: #2ECC71 !important; color: #1A6B3A !important; }
+[data-testid="stError"] { background: #FFF5F5 !important; border-color: #E74C3C !important; color: #6B1A1A !important; }
+[data-testid="stInfo"] { background: #EFF8FF !important; border-color: #1A7FC1 !important; color: #1A3A5C !important; }
+[data-testid="stWarning"] { background: #FFFBEB !important; border-color: #F39C12 !important; color: #6B4A00 !important; }
+
+/* ── PÁGINA ── */
+h1 { color: #1A3A5C !important; font-size: 22px !important; font-weight: 800 !important; margin-bottom: 4px !important; }
+h2, h3 { color: #1A3A5C !important; }
+p, .stCaption { color: #5A6A7A !important; }
+
+/* Esconder hamburger */
+[data-testid="collapsedControl"] { display: none !important; }
 
 /* Divider */
-hr { border-color: #30363D !important; }
+hr { border-color: #E5E9F0 !important; }
 
-/* Radio e checkbox */
-.stRadio label, .stCheckbox label { color: #E6EDF3 !important; }
-
-/* Info/success/error */
-.stAlert { border-radius: 8px !important; }
-
-/* Form */
-[data-testid="stForm"] { background: #161B22; border: 1px solid #30363D; border-radius: 12px; padding: 20px; }
-
-/* File uploader */
-[data-testid="stFileUploader"] { background: #161B22; border: 1px solid #30363D; border-radius: 8px; }
-
-/* Título principal */
-h1 { color: #E6EDF3 !important; border-bottom: 2px solid #1F6FEB; padding-bottom: 8px; }
-h2, h3 { color: #C9D1D9 !important; }
-
-/* Caption */
-.stCaption { color: #8B949E !important; }
-
-/* Esconder sidebar */
-[data-testid="collapsedControl"] { display: none !important; }
-section[data-testid="stSidebar"] { display: none !important; }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #0D1117; }
-::-webkit-scrollbar-thumb { background: #30363D; border-radius: 3px; }
-
-/* Login card */
-.login-container {
-    display: flex; justify-content: center; align-items: center;
-    min-height: 90vh; padding: 20px;
-}
-.login-card {
-    background: #161B22;
-    border: 1px solid #30363D;
-    border-radius: 20px;
-    padding: 48px 40px;
-    width: 100%;
-    max-width: 420px;
-    text-align: center;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
-}
-.login-title {
-    font-size: 22px; font-weight: 800; color: #E6EDF3;
-    letter-spacing: 0.08em; text-transform: uppercase; margin: 16px 0 4px;
-}
-.login-sub { font-size: 13px; color: #8B949E; margin-bottom: 32px; }
-.login-label {
-    text-align: left; font-size: 12px; color: #8B949E;
-    text-transform: uppercase; letter-spacing: 0.05em;
-    margin-bottom: 4px; font-weight: 600;
-}
-
-/* Nav bar */
-.nav-bar {
-    display: flex; align-items: center; gap: 0;
-    background: #161B22; border-bottom: 1px solid #30363D;
-    padding: 0 16px; margin: -1rem -1rem 1rem -1rem;
-    position: sticky; top: 0; z-index: 999;
-}
-.nav-brand { padding: 10px 16px 10px 0; border-right: 1px solid #30363D; font-weight: 800; font-size: 14px; color: #E05252; letter-spacing: 0.08em; }
-.nav-menu { display: flex; flex: 1; gap: 0; padding: 0 8px; overflow-x: auto; }
-.nav-user { padding: 6px 14px; border-radius: 20px; background: #21262D; color: #C9D1D9; font-size: 12px; font-weight: 600; border: 1px solid #30363D; white-space: nowrap; }
-
-/* Card */
-.card {
-    background: #161B22; border: 1px solid #30363D;
-    border-radius: 12px; padding: 20px;
-    margin-bottom: 12px;
-}
-
-/* Status badge */
-.badge {
-    display: inline-block; padding: 3px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
-}
-
-/* Download button */
-.stDownloadButton > button {
-    background: #21262D !important; color: #3FB950 !important;
-    border: 1px solid #3FB950 !important; border-radius: 8px !important;
-}
-
-/* Número input sem arrows */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+/* Status badges coloridos */
+.badge-aberto   { background:#FEF3F2;color:#E74C3C;border:1px solid #FECACA;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+.badge-adiantado{ background:#FFF7ED;color:#EA8C00;border:1px solid #FED7AA;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+.badge-pendente { background:#F5F3FF;color:#7C3AED;border:1px solid #DDD6FE;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
+.badge-fechado  { background:#F0FFF4;color:#2ECC71;border:1px solid #BBF7D0;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700 }
 </style>
 """, unsafe_allow_html=True)
 
@@ -188,56 +262,35 @@ def sb_delete(t, f):
         return r.ok
     except: return False
 
-# ── LEITURA IA (CORRIGIDA) ─────────────────────────────────────────
+# ── LEITURA IA ─────────────────────────────────────────────────────
 def ler_contrato_ia(img_bytes, media_type="image/jpeg"):
     if not ANTHROPIC_KEY:
         return None, "⚠️ Chave ANTHROPIC_KEY não configurada nos Secrets do Streamlit."
     b64 = base64.b64encode(img_bytes).decode("utf-8")
-    prompt = """Analise este contrato de transporte e retorne APENAS um JSON puro, sem markdown, sem explicação, sem blocos de código.
-Formato obrigatório:
+    prompt = """Analise este contrato de transporte e retorne APENAS um JSON puro, sem markdown, sem explicação:
 {"cliente":"AUTOPORT","motorista":"NOME EM MAIUSCULAS","placa":"ABC1234","frota":"","contrato":"numero","data":"DD/MM/AAAA","fat_bruto":0.0,"chapa":0.0,"destino":"Cidade/UF","qtd_veiculos":0,"dt_pagamento":"DD/MM/AAAA"}
-
-Retorne SOMENTE o JSON, nada mais."""
+Retorne SOMENTE o JSON."""
     is_pdf = media_type == "application/pdf"
-    hdrs = {
-        "x-api-key": ANTHROPIC_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    if is_pdf:
-        hdrs["anthropic-beta"] = "pdfs-2024-09-25"
-    bloco = {
-        "type": "document" if is_pdf else "image",
-        "source": {"type": "base64", "media_type": media_type, "data": b64}
-    }
+    hdrs = {"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"}
+    if is_pdf: hdrs["anthropic-beta"] = "pdfs-2024-09-25"
+    bloco = {"type": "document" if is_pdf else "image",
+             "source": {"type": "base64", "media_type": media_type, "data": b64}}
     try:
-        r = requests.post(
-            "https://api.anthropic.com/v1/messages",
-            headers=hdrs,
-            json={
-                "model": "claude-sonnet-4-20250514",
-                "max_tokens": 1024,
-                "messages": [{"role": "user", "content": [bloco, {"type": "text", "text": prompt}]}]
-            },
-            timeout=60
-        )
+        r = requests.post("https://api.anthropic.com/v1/messages", headers=hdrs,
+            json={"model": "claude-sonnet-4-20250514", "max_tokens": 1024,
+                  "messages": [{"role": "user", "content": [bloco, {"type": "text", "text": prompt}]}]},
+            timeout=60)
         if not r.ok:
-            resp = r.json() if r.headers.get("content-type","").startswith("application/json") else {}
-            msg = resp.get("error", {}).get("message", r.text[:200])
-            return None, f"Erro API ({r.status_code}): {msg}"
+            resp = r.json() if "application/json" in r.headers.get("content-type","") else {}
+            return None, f"Erro API ({r.status_code}): {resp.get('error',{}).get('message', r.text[:200])}"
         data = r.json()
-        if not data.get("content"):
-            return None, "Resposta vazia da API"
-        texto = data["content"][0].get("text", "")
-        # limpa markdown caso exista
-        clean = texto.replace("```json", "").replace("```", "").strip()
-        s = clean.find("{")
-        e = clean.rfind("}") + 1
-        if s >= 0 and e > s:
-            return json.loads(clean[s:e]), None
-        return None, f"JSON não encontrado na resposta: {clean[:200]}"
+        texto = data.get("content", [{}])[0].get("text", "")
+        clean = texto.replace("```json","").replace("```","").strip()
+        s = clean.find("{"); e = clean.rfind("}") + 1
+        if s >= 0 and e > s: return json.loads(clean[s:e]), None
+        return None, f"JSON não encontrado: {clean[:200]}"
     except requests.exceptions.Timeout:
-        return None, "Timeout: o arquivo pode ser muito grande ou a rede está lenta."
+        return None, "Timeout: arquivo pode ser grande demais ou rede lenta."
     except Exception as ex:
         return None, str(ex)
 
@@ -254,16 +307,29 @@ PERFIS = {
     "👩‍💼 Claudiane": {"senha": "claudiane123", "perm": "view"},
     "👥 Equipe": {"senha": "equipe2026", "perm": "equipe"}
 }
-STATUS_COR = {"ABERTO":"#E05252","ADIANTADO":"#F0883E","PENDENTE":"#BC8CFF","FECHADO":"#3FB950","FOLHA PAGA":"#56D364"}
-PLOT = dict(paper_bgcolor="#0D1117", plot_bgcolor="#161B22",
-            font=dict(color="#C9D1D9", family="Arial"),
-            xaxis=dict(gridcolor="#21262D", color="#8B949E"),
-            yaxis=dict(gridcolor="#21262D", color="#8B949E"),
-            margin=dict(l=0, r=100, t=20, b=0))
+STATUS_COR = {"ABERTO":"#E74C3C","ADIANTADO":"#EA8C00","PENDENTE":"#7C3AED","FECHADO":"#2ECC71"}
+
+# Cores do gráfico: tema claro/profissional
+PLOT = dict(
+    paper_bgcolor="white", plot_bgcolor="white",
+    font=dict(color="#5A6A7A", family="Inter, sans-serif", size=12),
+    xaxis=dict(gridcolor="#F0F2F5", color="#8896A7", showline=False, tickfont=dict(size=11)),
+    yaxis=dict(gridcolor="#F0F2F5", color="#8896A7", showline=False, tickfont=dict(size=11)),
+    margin=dict(l=0, r=20, t=20, b=0)
+)
 
 def R(v):
     try: return f"R$ {float(v or 0):,.2f}".replace(",","X").replace(".",",").replace("X",".")
     except: return "R$ 0,00"
+
+def R_short(v):
+    """Formata valor de forma resumida: R$ 127k, R$ 1,2M"""
+    try:
+        f = float(v or 0)
+        if f >= 1_000_000: return f"R$ {f/1_000_000:.1f}M".replace(".",",")
+        if f >= 1_000: return f"R$ {f/1_000:.1f}k".replace(".",",")
+        return R(f)
+    except: return "R$ 0"
 
 def com(m, f):
     f = float(f or 0)
@@ -273,147 +339,89 @@ def fd(d):
     try: return datetime.strptime(str(d)[:10], "%Y-%m-%d").strftime("%d/%m/%Y")
     except: return ""
 
-def badge(status):
-    cor = STATUS_COR.get(status, "#8B949E")
-    return f'<span style="background:{cor}22;color:{cor};border:1px solid {cor};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">{status}</span>'
+def badge_html(status):
+    cls = {"ABERTO":"badge-aberto","ADIANTADO":"badge-adiantado","PENDENTE":"badge-pendente","FECHADO":"badge-fechado"}.get(status,"badge-aberto")
+    return f'<span class="{cls}">{status}</span>'
 
-# ── EXPORTAÇÃO EXCEL ───────────────────────────────────────────────
 def gerar_excel(df, titulo="Relatório"):
-    """Gera um arquivo Excel formatado com os dados dos contratos."""
     from openpyxl import Workbook
-    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side, numbers
-    from openpyxl.utils import get_column_letter
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = titulo[:31]
-
-    # Cores
-    azul_esc = "1F3A6B"
-    azul_med = "2E6DA4"
-    cinza_cl = "F2F2F2"
-    branco = "FFFFFF"
-    verde = "1A7A4A"
-
-    thin = Side(style="thin", color="CCCCCC")
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    wb = Workbook(); ws = wb.active; ws.title = titulo[:31]
+    thin = Side(style="thin", color="E0E0E0")
     borda = Border(left=thin, right=thin, top=thin, bottom=thin)
-
-    # Cabeçalho
-    ws.merge_cells("A1:I1")
+    ws.merge_cells("A1:J1")
     ws["A1"] = f"Carlos Roesel Transportes — {titulo}"
-    ws["A1"].font = Font(bold=True, color=branco, size=14, name="Arial")
-    ws["A1"].fill = PatternFill("solid", fgColor=azul_esc)
+    ws["A1"].font = Font(bold=True, color="FFFFFF", size=13, name="Calibri")
+    ws["A1"].fill = PatternFill("solid", fgColor="1A3A5C")
     ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
-    ws.row_dimensions[1].height = 28
-
-    ws.merge_cells("A2:I2")
+    ws.row_dimensions[1].height = 26
+    ws.merge_cells("A2:J2")
     ws["A2"] = f"Gerado em {datetime.now().strftime('%d/%m/%Y %H:%M')}"
-    ws["A2"].font = Font(italic=True, color="666666", size=10, name="Arial")
+    ws["A2"].font = Font(italic=True, color="888888", size=10)
     ws["A2"].alignment = Alignment(horizontal="center")
-    ws.row_dimensions[2].height = 18
-
-    # Colunas
-    colunas = ["MOTORISTA","CLIENTE","CONTRATO","DATA","FAT. BRUTO (R$)","CHAPA (R$)","ADIANTAMENTO (R$)","FOLHA (R$)","DESTINO","STATUS"]
+    colunas = ["MOTORISTA","CLIENTE","CONTRATO","DATA","FAT. BRUTO","CHAPA","ADIANTAMENTO","FOLHA","DESTINO","STATUS"]
     for i, col in enumerate(colunas, 1):
         c = ws.cell(row=3, column=i, value=col)
-        c.font = Font(bold=True, color=branco, name="Arial", size=10)
-        c.fill = PatternFill("solid", fgColor=azul_med)
-        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        c.font = Font(bold=True, color="FFFFFF", name="Calibri", size=10)
+        c.fill = PatternFill("solid", fgColor="1A7FC1")
+        c.alignment = Alignment(horizontal="center", vertical="center")
         c.border = borda
-    ws.row_dimensions[3].height = 22
-
-    # Dados
+    ws.row_dimensions[3].height = 20
     df2 = df.copy()
     if "data" in df2.columns:
         df2["data"] = pd.to_datetime(df2["data"], errors="coerce").dt.strftime("%d/%m/%Y")
-
     for ri, (_, row) in enumerate(df2.iterrows(), 4):
-        fill_cor = cinza_cl if ri % 2 == 0 else branco
+        fill_cor = "FAFBFC" if ri % 2 == 0 else "FFFFFF"
         a_val, f_val = com(row.get("motorista",""), row.get("fat_bruto", 0))
-        linha = [
-            row.get("motorista",""),
-            row.get("cliente",""),
-            row.get("contrato",""),
-            row.get("data",""),
-            float(row.get("fat_bruto", 0)),
-            float(row.get("chapa", 0)),
-            a_val if row.get("motorista","") not in SEM else 0,
-            f_val,
-            row.get("destino",""),
-            row.get("status",""),
-        ]
+        linha = [row.get("motorista",""), row.get("cliente",""), row.get("contrato",""),
+                 row.get("data",""), float(row.get("fat_bruto",0)), float(row.get("chapa",0)),
+                 a_val if row.get("motorista","") not in SEM else 0, f_val,
+                 row.get("destino",""), row.get("status","")]
         for ci, val in enumerate(linha, 1):
             c = ws.cell(row=ri, column=ci, value=val)
-            c.font = Font(name="Arial", size=10)
+            c.font = Font(name="Calibri", size=10)
             c.fill = PatternFill("solid", fgColor=fill_cor)
             c.border = borda
-            if ci in (5,6,7,8):
-                c.number_format = '#,##0.00'
-                c.alignment = Alignment(horizontal="right")
-            elif ci == 4:
-                c.alignment = Alignment(horizontal="center")
-            else:
-                c.alignment = Alignment(horizontal="left")
-        ws.row_dimensions[ri].height = 18
-
-    # Totais
-    nrows = len(df2) + 4
-    ws.cell(row=nrows, column=4, value="TOTAL").font = Font(bold=True, name="Arial")
-    for ci, col in [(5,"fat_bruto"),(6,"chapa")]:
-        v = float(df2[col].sum()) if col in df2.columns else 0
-        c = ws.cell(row=nrows, column=ci, value=v)
-        c.font = Font(bold=True, color=verde, name="Arial")
-        c.number_format = '#,##0.00'
-        c.alignment = Alignment(horizontal="right")
-        c.fill = PatternFill("solid", fgColor="E8F5E9")
-        c.border = borda
-
-    # Larguras
-    ws.column_dimensions["A"].width = 20
-    ws.column_dimensions["B"].width = 14
-    ws.column_dimensions["C"].width = 16
-    ws.column_dimensions["D"].width = 12
-    ws.column_dimensions["E"].width = 16
-    ws.column_dimensions["F"].width = 14
-    ws.column_dimensions["G"].width = 18
-    ws.column_dimensions["H"].width = 14
-    ws.column_dimensions["I"].width = 20
-    ws.column_dimensions["J"].width = 12
-
-    buf = io.BytesIO()
-    wb.save(buf)
-    buf.seek(0)
+            if ci in (5,6,7,8): c.number_format = '#,##0.00'; c.alignment = Alignment(horizontal="right")
+            elif ci == 4: c.alignment = Alignment(horizontal="center")
+            else: c.alignment = Alignment(horizontal="left")
+    for ci, w in enumerate([20,14,16,12,16,14,18,14,20,12], 1):
+        from openpyxl.utils import get_column_letter
+        ws.column_dimensions[get_column_letter(ci)].width = w
+    buf = io.BytesIO(); wb.save(buf); buf.seek(0)
     return buf
 
-# ── LOGIN ──────────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════
+# LOGIN
+# ══════════════════════════════════════════════════════════════════
 if "ok" not in st.session_state:
     st.session_state.ok = False
 
 if not st.session_state.ok:
-    st.markdown("""
-    <div style='display:flex;justify-content:center;align-items:center;min-height:85vh'>
-      <div style='background:#161B22;border:1px solid #30363D;border-radius:20px;padding:52px 44px 40px;width:440px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.7)'>
-        <div style='font-size:56px;margin-bottom:12px'>🚛</div>
-        <div style='font-size:22px;font-weight:800;color:#E6EDF3;letter-spacing:0.1em;text-transform:uppercase'>Carlos Roesel</div>
-        <div style='font-size:13px;color:#8B949E;margin-bottom:8px'>TRANSPORTES</div>
-        <div style='font-size:11px;color:#30363D;margin-bottom:32px'>CNPJ 66.330.549/0001-52</div>
-        <div style='height:1px;background:#30363D;margin-bottom:28px'></div>
-        <div style='font-size:11px;color:#8B949E;text-align:left;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em'>Perfil de Acesso</div>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-    _, col, _ = st.columns([1, 1.2, 1])
-    with col:
-        p = st.selectbox("Perfil", list(PERFIS.keys()), label_visibility="collapsed")
-        s = st.text_input("Senha", type="password", placeholder="Digite sua senha…", label_visibility="collapsed")
-        if st.button("Entrar →", use_container_width=True):
+    # Centraliza o login
+    col_l, col_m, col_r = st.columns([1, 1, 1])
+    with col_m:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("""
+        <div style='background:white;border-radius:16px;padding:48px 40px;border:1px solid #E5E9F0;box-shadow:0 8px 40px rgba(26,58,92,0.12);text-align:center'>
+            <div style='font-size:52px;margin-bottom:12px'>🚛</div>
+            <div style='font-size:20px;font-weight:800;color:#1A3A5C;letter-spacing:0.08em;text-transform:uppercase'>Carlos Roesel</div>
+            <div style='font-size:13px;font-weight:600;color:#1A7FC1;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px'>TRANSPORTES</div>
+            <div style='font-size:11px;color:#B8CDE0;margin-bottom:32px'>Sistema de Gestão de Contratos</div>
+            <hr style='border-color:#F0F2F5;margin-bottom:28px'>
+        </div>
+        """, unsafe_allow_html=True)
+        p = st.selectbox("Perfil", list(PERFIS.keys()))
+        s = st.text_input("Senha", type="password", placeholder="Digite sua senha")
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Acessar o sistema →", use_container_width=True):
             if s == PERFIS[p]["senha"]:
                 st.session_state.ok = True
                 st.session_state.perfil = p
                 st.session_state.perm = PERFIS[p]["perm"]
                 st.rerun()
             else:
-                st.error("Senha incorreta. Tente novamente.")
+                st.error("Senha incorreta.")
     st.stop()
 
 perm = st.session_state.perm
@@ -440,199 +448,287 @@ def get_premios():
 df_all   = get_df()
 prem_map = get_premios()
 
-# ── MENU HORIZONTAL ────────────────────────────────────────────────
-if "aba" not in st.session_state:
-    st.session_state.aba = "📊 Dashboard"
+# ══════════════════════════════════════════════════════════════════
+# SIDEBAR
+# ══════════════════════════════════════════════════════════════════
+with st.sidebar:
+    # Logo / Marca
+    st.markdown("""
+    <div style='padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:8px'>
+        <div style='font-size:26px;font-weight:900;color:white;letter-spacing:0.08em'>🚛 RT</div>
+        <div style='font-size:10px;color:#7AADCC;letter-spacing:0.15em;text-transform:uppercase;margin-top:2px'>Roesel Transportes</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-perfil_nome = st.session_state.perfil.split(" ", 1)[-1] if " " in st.session_state.perfil else st.session_state.perfil
+    # Menu
+    st.markdown("<div style='padding:8px 12px 4px;font-size:10px;font-weight:700;color:#5A8BAD;text-transform:uppercase;letter-spacing:0.1em'>Menu</div>", unsafe_allow_html=True)
 
-ABAS = ["📊 Dashboard","➕ Novo Contrato","📋 Contratos","👤 Por Motorista","💳 Comissões","🏆 Prêmios"]
-nav_cols = st.columns([2, 1, 1, 1, 1, 1, 1, 0.5, 1.2, 0.6])
-with nav_cols[0]:
-    st.markdown("<div style='padding:12px 0;font-size:15px;font-weight:800;color:#E05252;letter-spacing:0.08em'>🚛 ROESEL</div>", unsafe_allow_html=True)
-for i, a in enumerate(ABAS, 1):
-    with nav_cols[i]:
-        ativo = st.session_state.aba == a
-        if st.button(a.split(" ",1)[-1], key=f"nav_{i}",
-            use_container_width=True,
-            type="primary" if ativo else "secondary"):
-            st.session_state.aba = a
+    ABAS = {
+        "📊  Visão Geral": "dashboard",
+        "➕  Novo Contrato": "novo",
+        "📋  Contratos": "contratos",
+        "👤  Por Motorista": "motorista",
+        "💳  Comissões": "comissoes",
+        "🏆  Prêmios": "premios",
+    }
+    if "aba" not in st.session_state:
+        st.session_state.aba = "dashboard"
+
+    for label, key in ABAS.items():
+        ativo = st.session_state.aba == key
+        bg = "rgba(255,255,255,0.15)" if ativo else "transparent"
+        cor = "white" if ativo else "#B8CDE0"
+        borda_l = "3px solid #4DB8FF" if ativo else "3px solid transparent"
+        if st.button(label, key=f"menu_{key}", use_container_width=True):
+            st.session_state.aba = key
             st.rerun()
-with nav_cols[8]:
-    st.markdown(f'<div style="padding:8px 0;text-align:right"><span style="background:#21262D;border:1px solid #30363D;border-radius:20px;padding:4px 12px;font-size:12px;color:#C9D1D9">{perfil_nome}</span></div>', unsafe_allow_html=True)
-with nav_cols[9]:
-    if st.button("🚪", help="Sair", use_container_width=True):
+
+    # Filtros de período
+    st.markdown("<div style='padding:16px 12px 4px;font-size:10px;font-weight:700;color:#5A8BAD;text-transform:uppercase;letter-spacing:0.1em;margin-top:8px'>Período</div>", unsafe_allow_html=True)
+    anos_list = [0] + sorted(df_all["data"].dt.year.dropna().unique().astype(int).tolist(), reverse=True) if not df_all.empty else [0, 2026]
+    ano_sel = st.selectbox("Ano", anos_list, index=1 if len(anos_list) > 1 else 0,
+        format_func=lambda x: "Todos" if x == 0 else str(x), key="sidebar_ano")
+    mes_sel = st.selectbox("Mês", [0]+list(range(1,13)), index=datetime.now().month,
+        format_func=lambda x: "Todos" if x == 0 else MESES[x-1], key="sidebar_mes")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.divider()
+
+    # Usuário logado
+    perfil_nome = st.session_state.perfil
+    st.markdown(f"""
+    <div style='padding:12px;background:rgba(255,255,255,0.07);border-radius:8px;margin:4px 0'>
+        <div style='font-size:11px;color:#7AADCC;margin-bottom:2px'>Logado como</div>
+        <div style='font-size:13px;color:white;font-weight:600'>{perfil_nome}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button("🚪 Sair", use_container_width=True):
         st.session_state.ok = False
         st.rerun()
 
-st.markdown('<hr style="margin:8px 0;border-color:#30363D">', unsafe_allow_html=True)
-aba = st.session_state.aba
+# ── FILTRAR DADOS ──────────────────────────────────────────────────
+df = df_all.copy()
+if not df_all.empty:
+    if ano_sel: df = df[df["data"].dt.year == ano_sel]
+    if mes_sel: df = df[df["data"].dt.month == mes_sel]
 
-# ── FILTRO DE PERÍODO ──────────────────────────────────────────────
-def sel_periodo(key_suffix=""):
-    anos_list = [0] + sorted(df_all["data"].dt.year.dropna().unique().astype(int).tolist(), reverse=True) if not df_all.empty else [0, 2026]
-    c1, c2, c3 = st.columns([1, 1, 4])
-    with c1:
-        ano = st.selectbox("📅 Ano", anos_list,
-            index=1 if len(anos_list) > 1 else 0,
-            format_func=lambda x: "Todos os anos" if x == 0 else str(x),
-            key=f"ano_{key_suffix}")
-    with c2:
-        mes = st.selectbox("🗓️ Mês", [0] + list(range(1, 13)),
-            index=datetime.now().month,
-            format_func=lambda x: "Todos" if x == 0 else MESES[x - 1],
-            key=f"mes_{key_suffix}")
-    periodo = f"{MESES[mes-1]}/{ano}" if mes and ano else ("Todos" if not mes and not ano else MESES[mes-1] if mes else str(ano))
-    df = df_all.copy()
-    if not df_all.empty:
-        if ano: df = df[df["data"].dt.year == ano]
-        if mes: df = df[df["data"].dt.month == mes]
-    return df, periodo, ano, mes
+periodo = f"{MESES[mes_sel-1]}/{ano_sel}" if mes_sel and ano_sel else \
+          (MESES[mes_sel-1] if mes_sel else (str(ano_sel) if ano_sel else "Todos os períodos"))
+aba = st.session_state.aba
 
 # ══════════════════════════════════════════════════════════════════
 # DASHBOARD
 # ══════════════════════════════════════════════════════════════════
-if aba == "📊 Dashboard":
-    st.markdown("# 📊 Dashboard")
-    df, periodo, ano, mes = sel_periodo("dash")
-    st.markdown(f"<p style='color:#8B949E;margin-top:-12px'>{periodo} · {len(df)} contratos</p>", unsafe_allow_html=True)
+if aba == "dashboard":
+    # Cabeçalho
+    st.markdown(f"""
+    <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:24px'>
+        <div>
+            <h1 style='margin:0'>Visão Geral</h1>
+            <p style='margin:4px 0 0;color:#8896A7;font-size:13px'>📅 {periodo}</p>
+        </div>
+        <div style='background:white;border:1px solid #E5E9F0;border-radius:8px;padding:8px 16px;font-size:13px;color:#5A6A7A;font-weight:500'>
+            Última atualização: {datetime.now().strftime("%d/%m %H:%M")}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     if df.empty:
-        st.markdown(f"""<div class='card' style='text-align:center;padding:60px'>
-            <div style='font-size:40px'>📭</div>
-            <div style='color:#8B949E;margin-top:8px'>Nenhum contrato em {periodo}</div>
-        </div>""", unsafe_allow_html=True)
+        st.info(f"Nenhum dado encontrado para {periodo}.")
     else:
         fat = df["fat_bruto"].sum()
         pend = len(df[df["status"].isin(["ABERTO","PENDENTE"])])
-        c1,c2,c3,c4,c5,c6 = st.columns(6)
-        c1.metric("💰 Faturamento", R(fat))
-        c2.metric("📄 Contratos", len(df))
-        c3.metric("⚠️ Pendentes", pend)
-        c4.metric("⏩ Adiantamentos", R(df["adiant"].sum()))
-        c5.metric("📋 Folha", R(df["folha"].sum()))
-        c6.metric("🔧 Chapas", R(df["chapa"].sum()))
-
         meta_pct = min(fat / META * 100, 100)
-        cor_meta = "#3FB950" if meta_pct >= 100 else "#F0883E"
-        st.markdown(f"""
-        <div class='card'>
-            <div style='display:flex;justify-content:space-between;margin-bottom:8px'>
-                <span style='color:#C9D1D9;font-weight:700;font-size:13px'>🏆 Progresso da Meta Mensal</span>
-                <span style='color:{cor_meta};font-weight:700;font-size:13px'>{R(fat)} / {R(META)} ({meta_pct:.1f}%)</span>
-            </div>
-            <div style='background:#21262D;border-radius:4px;height:8px'>
-                <div style='background:linear-gradient(90deg,#1F6FEB,{cor_meta});width:{meta_pct}%;height:8px;border-radius:4px;transition:width 0.5s'></div>
-            </div>
-        </div>""", unsafe_allow_html=True)
 
-        col1, col2 = st.columns([3, 2])
-        with col1:
-            st.markdown("#### 📈 Faturamento por Motorista")
+        # ── MÉTRICAS TOP ──
+        c1, c2, c3, c4, c5 = st.columns(5)
+        metricas = [
+            (c1, "💰 Faturamento Total", R_short(fat), f"{meta_pct:.0f}% da meta", meta_pct >= 80, "#1A7FC1"),
+            (c2, "📄 Total de Contratos", str(len(df)), f"{pend} pendentes", pend == 0, "#8B5CF6"),
+            (c3, "⏩ Adiantamentos", R_short(df["adiant"].sum()), "pago aos motoristas", True, "#F59E0B"),
+            (c4, "📋 Folha Total", R_short(df["folha"].sum()), "comissão motoristas", True, "#10B981"),
+            (c5, "🔧 Total Chapas", R_short(df["chapa"].sum()), "custo chapas", True, "#EC4899"),
+        ]
+        for col, label, valor, sub, positivo, cor in metricas:
+            with col:
+                st.markdown(f"""
+                <div class='metric-card'>
+                    <div class='metric-label'>{label}</div>
+                    <div class='metric-value' style='color:{cor}'>{valor}</div>
+                    <div class='metric-delta {"delta-up" if positivo else "delta-down"}'>
+                        {"▲" if positivo else "▼"} {sub}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ── GRÁFICO DE BARRAS + PIZZA ──
+        col_g1, col_g2 = st.columns([3, 1.8])
+
+        with col_g1:
+            st.markdown("""<div class='panel-card'>
+                <div class='panel-title'>📈 Faturamento por Motorista</div>""",
+                unsafe_allow_html=True)
             fm = df.groupby("motorista")["fat_bruto"].sum().sort_values().reset_index()
-            fm["cor"] = fm["fat_bruto"].apply(lambda x: "#3FB950" if x >= META else "#E05252")
+            fm["cor"] = fm["fat_bruto"].apply(lambda x: "#2ECC71" if x >= META else "#1A7FC1")
             fig = go.Figure(go.Bar(
                 x=fm["fat_bruto"], y=fm["motorista"], orientation="h",
                 marker_color=fm["cor"],
-                text=[R(v) for v in fm["fat_bruto"]], textposition="outside",
-                textfont=dict(color="#C9D1D9", size=11)
+                text=[R_short(v) for v in fm["fat_bruto"]],
+                textposition="outside",
+                textfont=dict(color="#5A6A7A", size=11)
             ))
-            fig.add_vline(x=META, line_dash="dash", line_color="#F0883E",
-                annotation_text="Meta 🏆", annotation_font_color="#F0883E")
-            fig.update_layout(height=420, **PLOT)
-            st.plotly_chart(fig, use_container_width=True)
+            fig.add_vline(x=META, line_dash="dash", line_color="#F59E0B", line_width=2,
+                annotation_text="Meta", annotation_font_color="#F59E0B", annotation_font_size=11)
+            fig.update_layout(height=380, showlegend=False, **PLOT)
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+            st.markdown("</div>", unsafe_allow_html=True)
 
-        with col2:
-            st.markdown("#### 🥧 Status dos Contratos")
+        with col_g2:
+            st.markdown("""<div class='panel-card'>
+                <div class='panel-title'>🥧 Status dos Contratos</div>""",
+                unsafe_allow_html=True)
             sc = df["status"].value_counts().reset_index()
+            CORES_PIE = {"ABERTO":"#E74C3C","ADIANTADO":"#F59E0B","PENDENTE":"#8B5CF6","FECHADO":"#2ECC71"}
             fig2 = px.pie(sc, values="count", names="status",
-                color="status", color_discrete_map=STATUS_COR, hole=0.5)
-            fig2.update_layout(height=420, paper_bgcolor="#0D1117",
-                font=dict(color="#C9D1D9"), legend=dict(font=dict(color="#C9D1D9")),
-                margin=dict(l=0, r=0, t=20, b=0))
-            fig2.update_traces(textfont_color="#E6EDF3")
-            st.plotly_chart(fig2, use_container_width=True)
+                color="status", color_discrete_map=CORES_PIE, hole=0.55)
+            fig2.update_layout(height=380,
+                paper_bgcolor="white", plot_bgcolor="white",
+                font=dict(color="#5A6A7A", size=12),
+                legend=dict(orientation="v", yanchor="middle", y=0.5, font=dict(size=12)),
+                margin=dict(l=0, r=10, t=10, b=10))
+            fig2.update_traces(textfont_color="white", textfont_size=12)
+            st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
+            st.markdown("</div>", unsafe_allow_html=True)
 
-        st.markdown("#### 🏆 Ranking de Motoristas")
-        rk = df.groupby("motorista")["fat_bruto"].sum().sort_values(ascending=False).reset_index()
-        for i, row in rk.iterrows():
-            pct = min(row["fat_bruto"] / META * 100, 100)
-            el = row["fat_bruto"] >= META
-            cor = "#F0883E" if el else "#388BFD"
-            st.markdown(f"""
-            <div class='card' style='display:flex;align-items:center;gap:16px;padding:12px 16px;margin:4px 0'>
-                <div style='font-size:18px;width:30px;text-align:center'>{"🏆" if el else f"#{i+1}"}</div>
-                <div style='flex:1'>
-                    <div style='display:flex;justify-content:space-between;margin-bottom:6px'>
-                        <span style='color:#E6EDF3;font-weight:700;font-size:13px'>{row["motorista"]}</span>
-                        <span style='color:{cor};font-weight:700;font-size:13px'>{R(row["fat_bruto"])}</span>
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ── PAINÉIS INFERIORES ──
+        col_p1, col_p2, col_p3 = st.columns([1.4, 1.3, 1.3])
+
+        with col_p1:
+            st.markdown("""<div class='panel-card'>
+                <div class='panel-title'>🏆 Top Motoristas</div>""",
+                unsafe_allow_html=True)
+            rk = df.groupby("motorista")["fat_bruto"].sum().sort_values(ascending=False).head(5).reset_index()
+            st.markdown("<table style='width:100%;border-collapse:collapse'>", unsafe_allow_html=True)
+            st.markdown("<tr><th style='text-align:left;padding:6px;font-size:11px;color:#8896A7;font-weight:700;border-bottom:2px solid #F0F2F5'>MOTORISTA</th><th style='text-align:right;padding:6px;font-size:11px;color:#8896A7;font-weight:700;border-bottom:2px solid #F0F2F5'>FATURAMENTO</th><th style='text-align:center;padding:6px;font-size:11px;color:#8896A7;font-weight:700;border-bottom:2px solid #F0F2F5'>META</th></tr>",
+                unsafe_allow_html=True)
+            medalhas = ["🥇","🥈","🥉","4°","5°"]
+            for i, row in rk.iterrows():
+                el = row["fat_bruto"] >= META
+                cor_val = "#2ECC71" if el else "#1A3A5C"
+                st.markdown(f"""
+                <tr style='border-bottom:1px solid #F4F6F9'>
+                    <td style='padding:10px 6px;font-size:13px;color:#1A3A5C;font-weight:600'>
+                        {medalhas[i]} {row['motorista']}
+                    </td>
+                    <td style='padding:10px 6px;text-align:right;font-size:13px;font-weight:700;color:{cor_val}'>
+                        {R_short(row['fat_bruto'])}
+                    </td>
+                    <td style='padding:10px 6px;text-align:center'>
+                        {"✅" if el else f"<span style='font-size:11px;color:#EA8C00'>{min(row['fat_bruto']/META*100,100):.0f}%</span>"}
+                    </td>
+                </tr>""", unsafe_allow_html=True)
+            st.markdown("</table></div>", unsafe_allow_html=True)
+
+        with col_p2:
+            st.markdown("""<div class='panel-card'>
+                <div class='panel-title'>📦 Contratos por Cliente</div>""",
+                unsafe_allow_html=True)
+            cli_fat = df.groupby("cliente")["fat_bruto"].sum().sort_values(ascending=False).head(5)
+            total_cli = cli_fat.sum()
+            for cli, val in cli_fat.items():
+                pct = val / total_cli * 100 if total_cli > 0 else 0
+                st.markdown(f"""
+                <div style='margin-bottom:14px'>
+                    <div style='display:flex;justify-content:space-between;margin-bottom:5px'>
+                        <span style='font-size:13px;font-weight:600;color:#1A3A5C'>{cli}</span>
+                        <span style='font-size:12px;color:#5A6A7A;font-weight:500'>{R_short(val)} <span style='color:#8896A7'>({pct:.0f}%)</span></span>
                     </div>
-                    <div style='background:#21262D;border-radius:3px;height:5px'>
-                        <div style='background:{cor};width:{pct}%;height:5px;border-radius:3px'></div>
+                    <div style='background:#F4F6F9;border-radius:4px;height:6px'>
+                        <div style='background:#1A7FC1;width:{pct}%;height:6px;border-radius:4px'></div>
                     </div>
-                </div>
-                <div style='font-size:11px;color:{"#3FB950" if el else "#8B949E"};font-weight:700;white-space:nowrap'>
-                    {"✅ Elegível" if el else f"Falta {R(META - row['fat_bruto'])}"}
-                </div>
-            </div>""", unsafe_allow_html=True)
+                </div>""", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with col_p3:
+            st.markdown("""<div class='panel-card'>
+                <div class='panel-title'>📊 Resumo Financeiro</div>""",
+                unsafe_allow_html=True)
+            total_adiant = df["adiant"].sum()
+            total_folha  = df["folha"].sum()
+            total_chapa  = df["chapa"].sum()
+            total_sai    = total_adiant + total_folha + total_chapa
+            itens = [
+                ("💰 Faturamento Bruto", fat, "#1A7FC1"),
+                ("⏩ Adiantamentos", total_adiant, "#F59E0B"),
+                ("📋 Folha de Pagto.", total_folha, "#8B5CF6"),
+                ("🔧 Chapas", total_chapa, "#EC4899"),
+                ("📤 Total de Saídas", total_sai, "#E74C3C"),
+                ("✅ Saldo Líquido", fat - total_sai, "#2ECC71"),
+            ]
+            for label, val, cor in itens:
+                negrito = "800" if label in ("✅ Saldo Líquido", "💰 Faturamento Bruto") else "500"
+                st.markdown(f"""
+                <div style='display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #F4F6F9'>
+                    <span style='font-size:13px;color:#5A6A7A;font-weight:{negrito}'>{label}</span>
+                    <span style='font-size:13px;font-weight:700;color:{cor}'>{R_short(val)}</span>
+                </div>""", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════
 # NOVO CONTRATO
 # ══════════════════════════════════════════════════════════════════
-elif aba == "➕ Novo Contrato":
+elif aba == "novo":
     if perm not in ["total","equipe"]:
         st.warning("Sem permissão para cadastrar contratos.")
         st.stop()
-    st.markdown("# ➕ Novo Contrato")
 
-    with st.expander("📷 Importar por Foto ou PDF com IA", expanded=False):
+    st.markdown(f"<h1>➕ Novo Contrato</h1><p style='color:#8896A7;margin-top:-8px'>Cadastre um novo contrato de transporte</p>", unsafe_allow_html=True)
+
+    with st.expander("📷 Importar via IA (Foto / PDF)", expanded=False):
         if not ANTHROPIC_KEY:
-            st.warning("⚠️ Configure a chave `ANTHROPIC_KEY` nos Secrets do Streamlit para usar esta função.")
+            st.warning("⚠️ Configure `ANTHROPIC_KEY` nos Secrets do Streamlit para usar a leitura automática.")
         else:
-            st.markdown("<p style='color:#8B949E;font-size:13px'>Envie uma foto ou PDF do contrato e a IA irá preencher os campos automaticamente.</p>", unsafe_allow_html=True)
-        upl = st.file_uploader("Selecione a foto ou PDF do contrato",
-            type=["jpg","jpeg","png","webp","pdf"],
-            help="Formatos aceitos: JPG, PNG, WEBP, PDF")
+            st.markdown("<p style='color:#5A6A7A;font-size:13px'>Envie uma foto ou PDF do contrato — a IA preenche os campos automaticamente.</p>", unsafe_allow_html=True)
+        upl = st.file_uploader("Arquivo do contrato", type=["jpg","jpeg","png","webp","pdf"])
         if upl:
-            col_a, col_b = st.columns([2, 1])
+            col_a, col_b = st.columns([2,1])
             with col_a:
                 if upl.type != "application/pdf":
                     st.image(upl, use_container_width=True)
                 else:
-                    st.markdown(f"""<div class='card' style='text-align:center;padding:24px'>
-                        <div style='font-size:36px'>📄</div>
-                        <div style='color:#388BFD;font-weight:700;margin-top:8px'>{upl.name}</div>
-                        <div style='color:#8B949E;font-size:12px'>PDF pronto para análise</div>
-                    </div>""", unsafe_allow_html=True)
+                    st.info(f"📄 **{upl.name}** — PDF pronto para análise")
             with col_b:
-                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<br><br>", unsafe_allow_html=True)
                 if st.button("🤖 Analisar com IA", use_container_width=True, disabled=not ANTHROPIC_KEY):
-                    with st.spinner("Analisando contrato… Pode levar alguns segundos."):
-                        arquivo = upl.read()
-                        if len(arquivo) > 5 * 1024 * 1024:
-                            st.error("Arquivo muito grande (máx. 5 MB). Por favor, comprima a imagem.")
-                        else:
+                    arquivo = upl.read()
+                    if len(arquivo) > 5 * 1024 * 1024:
+                        st.error("Arquivo muito grande (máx. 5 MB).")
+                    else:
+                        with st.spinner("Analisando…"):
                             dados, erro = ler_contrato_ia(arquivo, upl.type)
-                    if erro:
-                        st.error(f"Erro: {erro}")
-                        st.info("Dica: verifique se a ANTHROPIC_KEY está correta nos Secrets do Streamlit.")
-                    elif dados:
-                        st.session_state["ia"] = dados
-                        st.success("✅ Contrato lido com sucesso! Campos preenchidos abaixo.")
-                        st.rerun()
+                        if erro:
+                            st.error(f"Erro: {erro}")
+                        elif dados:
+                            st.session_state["ia"] = dados
+                            st.success("✅ Dados extraídos com sucesso!")
+                            st.rerun()
 
     ia = st.session_state.get("ia", {})
     if ia:
-        st.info("📋 Campos preenchidos pela IA — revise antes de salvar!")
+        st.success("📋 Campos preenchidos pela IA — confira e salve.")
 
     with st.form("fnovo", clear_on_submit=True):
+        st.markdown("**Dados do Contrato**")
         c1,c2,c3 = st.columns(3)
         mi = MOTORISTAS.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS else 0
         ci = CLIENTES.index(ia.get("cliente","")) if ia.get("cliente","") in CLIENTES else 0
         mot   = c1.selectbox("Motorista *", MOTORISTAS, index=mi)
         cli   = c2.selectbox("Cliente *", CLIENTES, index=ci)
         placa = c3.text_input("Placa *", ia.get("placa","")).upper()
-
         c4,c5,c6 = st.columns(3)
         cont  = c4.text_input("Nº Contrato *", ia.get("contrato",""))
         frota = c5.text_input("Frota", ia.get("frota",""))
@@ -641,57 +737,54 @@ elif aba == "➕ Novo Contrato":
             try: dia = datetime.strptime(ia["data"], "%d/%m/%Y")
             except: pass
         data_v = c6.date_input("Data *", dia)
-
+        st.markdown("**Valores**")
         c7,c8,c9 = st.columns(3)
-        fat_v   = c7.number_input("Fat. Bruto (R$) *", float(ia.get("fat_bruto", 0)), step=100.0, format="%.2f")
-        chapa_v = c8.number_input("Chapa (R$)", float(ia.get("chapa", 0)), step=50.0, format="%.2f")
-        qtd     = c9.number_input("Qtd Veículos", int(ia.get("qtd_veiculos", 0)), step=1)
-
+        fat_v   = c7.number_input("Fat. Bruto (R$) *", float(ia.get("fat_bruto",0)), step=100.0, format="%.2f")
+        chapa_v = c8.number_input("Chapa (R$)", float(ia.get("chapa",0)), step=50.0, format="%.2f")
+        qtd     = c9.number_input("Qtd Veículos", int(ia.get("qtd_veiculos",0)), step=1)
+        st.markdown("**Informações Adicionais**")
         c10,c11 = st.columns(2)
-        dest = c10.text_input("Destino", ia.get("destino","")).upper()
-        sts  = c11.selectbox("Status", STATUS)
-
+        dest   = c10.text_input("Destino", ia.get("destino","")).upper()
+        sts    = c11.selectbox("Status", STATUS)
         c12,c13 = st.columns(2)
         dt_pag = c12.date_input("Dt. Pagamento", value=None)
         adpago = c13.checkbox("Adiantamento Pago?")
-        obs = st.text_area("Observação", "", height=80)
-
+        obs    = st.text_area("Observação", "", height=70)
         if fat_v > 0:
             a, f = com(mot, fat_v)
-            st.markdown(f"""<div class='card' style='border-left:3px solid #388BFD;border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;color:#C9D1D9'>
-                💳 {"Sem adiantamento · " if mot in SEM else f"Adiantamento: <b style='color:#F0883E'>{R(a)}</b> · "}Folha: <b style='color:#BC8CFF'>{R(f)}</b>
+            st.markdown(f"""
+            <div style='background:#EFF8FF;border:1px solid #BFDBFE;border-radius:8px;padding:12px 16px;font-size:13px;color:#1A3A5C;margin:8px 0'>
+                💳 {"Sem adiantamento" if mot in SEM else f"Adiantamento: <b style='color:#F59E0B'>{R(a)}</b>"} &nbsp;·&nbsp; Folha: <b style='color:#8B5CF6'>{R(f)}</b>
             </div>""", unsafe_allow_html=True)
-
+        st.markdown("<br>", unsafe_allow_html=True)
         if st.form_submit_button("✅ Salvar Contrato", use_container_width=True):
             if not cont or not fat_v:
-                st.error("Preencha os campos obrigatórios: Nº Contrato e Faturamento.")
+                st.error("Preencha: Nº Contrato e Faturamento Bruto.")
             else:
-                novo = {"id": str(uuid.uuid4()), "motorista": mot, "cliente": cli,
-                        "placa": placa, "frota": frota, "contrato": cont, "data": str(data_v),
-                        "fat_bruto": fat_v, "chapa": chapa_v, "destino": dest,
-                        "qtd_veiculos": int(qtd), "adiantamento_pago": adpago,
+                novo = {"id": str(uuid.uuid4()), "motorista": mot, "cliente": cli, "placa": placa,
+                        "frota": frota, "contrato": cont, "data": str(data_v), "fat_bruto": fat_v,
+                        "chapa": chapa_v, "destino": dest, "qtd_veiculos": int(qtd),
+                        "adiantamento_pago": adpago,
                         "dt_pagamento": str(dt_pag) if dt_pag else None,
                         "status": sts, "obs": obs}
                 if sb_post("contratos", novo):
-                    st.success(f"✅ Contrato {cont} salvo com sucesso!")
+                    st.success(f"✅ Contrato {cont} salvo!")
                     st.cache_data.clear()
                     st.session_state.pop("ia", None)
                     st.rerun()
                 else:
-                    st.error("❌ Erro ao salvar no banco. Verifique a conexão com o Supabase.")
+                    st.error("❌ Erro ao salvar. Verifique a conexão com o Supabase.")
 
 # ══════════════════════════════════════════════════════════════════
 # CONTRATOS
 # ══════════════════════════════════════════════════════════════════
-elif aba == "📋 Contratos":
-    st.markdown("# 📋 Contratos")
-    df, periodo, ano, mes = sel_periodo("cont")
-    st.markdown(f"<p style='color:#8B949E;margin-top:-12px'>{periodo}</p>", unsafe_allow_html=True)
+elif aba == "contratos":
+    st.markdown(f"<h1>📋 Contratos</h1><p style='color:#8896A7;margin-top:-8px'>{periodo}</p>", unsafe_allow_html=True)
 
     c1,c2,c3 = st.columns(3)
-    busca = c1.text_input("🔍 Buscar", "", placeholder="Motorista, contrato, destino…")
-    fs = c2.selectbox("Status", ["Todos"] + STATUS)
-    fc = c3.selectbox("Cliente", ["Todos"] + CLIENTES)
+    busca = c1.text_input("🔍 Buscar", "", placeholder="Motorista, nº contrato, destino…")
+    fs = c2.selectbox("Filtrar por Status", ["Todos"] + STATUS)
+    fc = c3.selectbox("Filtrar por Cliente", ["Todos"] + CLIENTES)
 
     dv = df.copy()
     if not dv.empty:
@@ -704,16 +797,23 @@ elif aba == "📋 Contratos":
         if fs != "Todos": dv = dv[dv["status"] == fs]
         if fc != "Todos": dv = dv[dv.get("cliente","") == fc]
 
-    # Sumário
-    st.markdown(f"""<div style='display:flex;gap:24px;margin-bottom:12px;flex-wrap:wrap'>
-        <span style='color:#8B949E;font-size:13px'><b style='color:#E6EDF3'>{len(dv)}</b> contratos encontrados</span>
-        <span style='color:#8B949E;font-size:13px'>Faturamento: <b style='color:#3FB950'>{R(dv["fat_bruto"].sum() if not dv.empty else 0)}</b></span>
-        <span style='color:#8B949E;font-size:13px'>Adiantamentos: <b style='color:#F0883E'>{R(dv["adiant"].sum() if not dv.empty else 0)}</b></span>
-        <span style='color:#8B949E;font-size:13px'>Folha: <b style='color:#BC8CFF'>{R(dv["folha"].sum() if not dv.empty else 0)}</b></span>
-    </div>""", unsafe_allow_html=True)
+    # Sumário em cards pequenos
+    col_s1,col_s2,col_s3,col_s4 = st.columns(4)
+    for col, label, val, cor in [
+        (col_s1, "Contratos", str(len(dv)), "#1A7FC1"),
+        (col_s2, "Faturamento", R_short(dv["fat_bruto"].sum() if not dv.empty else 0), "#2ECC71"),
+        (col_s3, "Adiantamentos", R_short(dv["adiant"].sum() if not dv.empty else 0), "#F59E0B"),
+        (col_s4, "Folha", R_short(dv["folha"].sum() if not dv.empty else 0), "#8B5CF6"),
+    ]:
+        with col:
+            st.markdown(f"""<div class='metric-card' style='padding:14px 18px'>
+                <div class='metric-label'>{label}</div>
+                <div style='font-size:22px;font-weight:800;color:{cor}'>{val}</div>
+            </div>""", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
 
     if not dv.empty:
-        # Tabela organizada
         cols = [c for c in ["motorista","cliente","contrato","data","fat_bruto","chapa","destino","status","adiantamento_pago"] if c in dv.columns]
         ds = dv[cols].copy()
         ds["data"] = ds["data"].dt.strftime("%d/%m/%Y")
@@ -721,23 +821,22 @@ elif aba == "📋 Contratos":
         ds["chapa"] = ds["chapa"].apply(R)
         ds["adiantamento_pago"] = ds["adiantamento_pago"].apply(lambda x: "✅" if x else "❌")
         ds.columns = ["MOTORISTA","CLIENTE","CONTRATO","DATA","FAT. BRUTO","CHAPA","DESTINO","STATUS","ADIANT."][:len(cols)]
-
         st.dataframe(ds, use_container_width=True, hide_index=True,
             column_config={
-                "FAT. BRUTO": st.column_config.TextColumn(width="medium"),
                 "MOTORISTA": st.column_config.TextColumn(width="medium"),
+                "FAT. BRUTO": st.column_config.TextColumn(width="medium"),
                 "STATUS": st.column_config.TextColumn(width="small"),
                 "ADIANT.": st.column_config.TextColumn(width="small"),
             })
 
-        # Exportação
-        col_exp1, col_exp2 = st.columns(2)
-        with col_exp1:
+        # Exportações
+        col_e1, col_e2 = st.columns(2)
+        with col_e1:
             csv = dv.to_csv(index=False, sep=";", encoding="utf-8-sig")
             st.download_button("📥 Exportar CSV", csv,
                 f"contratos_{periodo.replace('/','_')}.csv", "text/csv",
                 use_container_width=True)
-        with col_exp2:
+        with col_e2:
             try:
                 excel_buf = gerar_excel(dv, f"Contratos {periodo}")
                 st.download_button("📊 Exportar Excel (.xlsx)", excel_buf,
@@ -747,70 +846,82 @@ elif aba == "📋 Contratos":
             except Exception as ex:
                 st.caption(f"Excel indisponível: {ex}")
 
-        # Editar/Excluir
         if perm == "total":
             st.markdown("---")
-            st.markdown("#### ✏️ Editar / Excluir Contrato")
+            st.markdown("#### ✏️ Editar / Excluir")
             labels = [f"{r['motorista']} — {r['contrato']} — {fd(str(r['data'])[:10])}" for _, r in dv.iterrows()]
             sel = st.selectbox("Selecione o contrato", labels)
             row = dv.iloc[labels.index(sel)]
-            with st.expander("✏️ Editar este contrato"):
+            with st.expander("✏️ Editar contrato"):
                 with st.form("fedit"):
                     ec1,ec2 = st.columns(2)
                     es = ec1.selectbox("Status", STATUS,
                         index=STATUS.index(row.get("status","ABERTO")) if row.get("status") in STATUS else 0)
                     ea = ec2.checkbox("Adiantamento Pago?", value=bool(row.get("adiantamento_pago")))
                     eo = st.text_area("Obs", value=row.get("obs","") or "")
-                    if st.form_submit_button("💾 Salvar alterações"):
+                    if st.form_submit_button("💾 Salvar"):
                         if sb_patch("contratos", f"id=eq.{row['id']}", {"status": es, "adiantamento_pago": ea, "obs": eo}):
-                            st.success("✅ Alterações salvas!")
-                            st.cache_data.clear()
-                            st.rerun()
-            if st.button(f"🗑️ Excluir contrato {row['contrato']}", type="secondary"):
+                            st.success("✅ Salvo!"); st.cache_data.clear(); st.rerun()
+            if st.button(f"🗑️ Excluir {row['contrato']}", type="secondary"):
                 if sb_delete("contratos", f"id=eq.{row['id']}"):
-                    st.success("Contrato excluído.")
-                    st.cache_data.clear()
-                    st.rerun()
+                    st.success("Excluído!"); st.cache_data.clear(); st.rerun()
     else:
-        st.info("Nenhum contrato encontrado com os filtros selecionados.")
+        st.info("Nenhum contrato encontrado.")
 
 # ══════════════════════════════════════════════════════════════════
 # POR MOTORISTA
 # ══════════════════════════════════════════════════════════════════
-elif aba == "👤 Por Motorista":
-    st.markdown("# 👤 Por Motorista")
-    df, periodo, ano, mes = sel_periodo("mot")
+elif aba == "motorista":
+    st.markdown("<h1>👤 Por Motorista</h1>", unsafe_allow_html=True)
     if df.empty:
-        st.info("Nenhum dado no período selecionado.")
+        st.info("Nenhum dado no período.")
     else:
         mot = st.selectbox("Selecione o motorista", sorted(df["motorista"].dropna().unique().tolist()))
         dm  = df[df["motorista"] == mot]
         fat = dm["fat_bruto"].sum()
         a, f = com(mot, fat)
         pct  = min(fat / META * 100, 100)
-        cor  = "#3FB950" if fat >= META else "#E05252"
+        cor  = "#2ECC71" if fat >= META else "#E74C3C"
 
-        st.markdown(f"""<div class='card'>
-            <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:16px'>
+        # Card perfil
+        st.markdown(f"""
+        <div class='panel-card' style='margin-bottom:20px'>
+            <div style='display:flex;justify-content:space-between;align-items:flex-start'>
                 <div>
-                    <div style='font-size:20px;font-weight:800;color:#E6EDF3'>{mot}</div>
-                    <div style='font-size:12px;color:#8B949E'>{"Sem adiantamento · 10% folha" if mot in SEM else "Com adiantamento · 5%+5%"}</div>
+                    <div style='font-size:24px;font-weight:800;color:#1A3A5C'>{mot}</div>
+                    <div style='font-size:12px;color:#8896A7;margin-top:4px'>{"Sem adiantamento · 10% folha" if mot in SEM else "Com adiantamento · 5% + 5%"}</div>
                 </div>
-                <div style='font-size:24px;font-weight:800;color:{cor}'>{R(fat)}</div>
+                <div style='text-align:right'>
+                    <div style='font-size:28px;font-weight:800;color:{cor}'>{R_short(fat)}</div>
+                    <div style='font-size:12px;color:{"#2ECC71" if fat >= META else "#E74C3C"}'>{"🏆 Meta atingida!" if fat >= META else f"Falta {R_short(META - fat)}"}</div>
+                </div>
             </div>
-            <div style='background:#21262D;border-radius:4px;height:8px;margin-bottom:8px'>
-                <div style='background:{cor};width:{pct}%;height:8px;border-radius:4px'></div>
+            <div style='margin-top:16px;background:#F4F6F9;border-radius:6px;height:10px'>
+                <div style='background:{cor};width:{pct}%;height:10px;border-radius:6px;transition:width 0.5s'></div>
             </div>
-            <div style='font-size:11px;color:#8B949E'>{"🏆 Elegível para prêmio!" if fat >= META else f"Falta {R(META-fat)} para a meta"}</div>
-        </div>""", unsafe_allow_html=True)
+            <div style='display:flex;justify-content:space-between;margin-top:6px'>
+                <span style='font-size:11px;color:#8896A7'>0</span>
+                <span style='font-size:11px;color:#F59E0B;font-weight:600'>Meta: {R_short(META)}</span>
+                <span style='font-size:11px;color:#8896A7'>{pct:.0f}%</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
+        # Métricas
         c1,c2,c3,c4 = st.columns(4)
-        c1.metric("Viagens", len(dm))
-        c2.metric("Adiantamento", R(a) if mot not in SEM else "N/A")
-        c3.metric("Folha", R(f))
-        c4.metric("Chapas", R(dm["chapa"].sum()))
+        for col, label, val, cor_m in [
+            (c1, "📄 Viagens", str(len(dm)), "#1A7FC1"),
+            (c2, "⏩ Adiantamento", R_short(a) if mot not in SEM else "N/A", "#F59E0B"),
+            (c3, "📋 Folha", R_short(f), "#8B5CF6"),
+            (c4, "🔧 Chapas", R_short(dm["chapa"].sum()), "#EC4899"),
+        ]:
+            with col:
+                st.markdown(f"""<div class='metric-card' style='padding:14px 18px'>
+                    <div class='metric-label'>{label}</div>
+                    <div style='font-size:22px;font-weight:800;color:{cor_m}'>{val}</div>
+                </div>""", unsafe_allow_html=True)
 
-        st.markdown("---")
+        st.markdown("<br>", unsafe_allow_html=True)
         if not dm.empty:
             cols = [c for c in ["contrato","cliente","data","fat_bruto","chapa","destino","status"] if c in dm.columns]
             ds = dm[cols].copy()
@@ -819,7 +930,6 @@ elif aba == "👤 Por Motorista":
             ds["chapa"] = ds["chapa"].apply(R)
             ds.columns = [c.upper().replace("_"," ") for c in ds.columns]
             st.dataframe(ds, use_container_width=True, hide_index=True)
-
             try:
                 excel_buf = gerar_excel(dm, f"{mot} {periodo}")
                 st.download_button("📊 Exportar Excel", excel_buf,
@@ -830,10 +940,8 @@ elif aba == "👤 Por Motorista":
 # ══════════════════════════════════════════════════════════════════
 # COMISSÕES
 # ══════════════════════════════════════════════════════════════════
-elif aba == "💳 Comissões":
-    st.markdown("# 💳 Comissões")
-    df, periodo, ano, mes = sel_periodo("com")
-    st.markdown(f"<p style='color:#8B949E;margin-top:-12px'>{periodo}</p>", unsafe_allow_html=True)
+elif aba == "comissoes":
+    st.markdown(f"<h1>💳 Comissões</h1><p style='color:#8896A7;margin-top:-8px'>{periodo}</p>", unsafe_allow_html=True)
     if df.empty:
         st.info("Nenhum dado no período.")
     else:
@@ -843,31 +951,27 @@ elif aba == "💳 Comissões":
             fat = dm["fat_bruto"].sum()
             a, f = com(mot, fat)
             pct = min(fat / META * 100, 100)
-            cor = "#3FB950" if fat >= META else "#E05252"
+            cor = "#2ECC71" if fat >= META else "#1A7FC1"
             st.markdown(f"""
-            <div class='card'>
-                <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'>
+            <div class='panel-card' style='margin-bottom:10px'>
+                <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:10px'>
                     <div>
-                        <span style='font-weight:700;color:#E6EDF3'>{mot}</span>
-                        <span style='font-size:11px;color:#8B949E;margin-left:8px'>{"10% folha" if mot in SEM else "5%+5%"} · {len(dm)} viagens</span>
+                        <span style='font-weight:700;color:#1A3A5C;font-size:14px'>{"🏆 " if fat >= META else ""}{mot}</span>
+                        <span style='font-size:11px;color:#8896A7;margin-left:8px'>{"10% folha" if mot in SEM else "5%+5%"} · {len(dm)} viagens</span>
                     </div>
-                    <div style='text-align:right'>
-                        <span style='color:{cor};font-weight:700'>{R(fat)}</span>
-                        {"&nbsp;&nbsp;<span style='background:#F0883E22;color:#F0883E;border:1px solid #F0883E;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700'>🏆 ELEGÍVEL</span>" if fat >= META else ""}
-                    </div>
+                    <span style='font-size:16px;font-weight:800;color:{cor}'>{R_short(fat)}</span>
                 </div>
-                <div style='display:flex;gap:20px;font-size:12px;color:#8B949E;flex-wrap:wrap'>
-                    {"<span>Adiant: <b style='color:#F0883E'>N/A</b></span>" if mot in SEM else f"<span>Adiant: <b style='color:#F0883E'>{R(a)}</b></span>"}
-                    <span>Folha: <b style='color:#BC8CFF'>{R(f)}</b></span>
-                    <span>Chapas: <b style='color:#C9D1D9'>{R(dm["chapa"].sum())}</b></span>
-                    <span>Total: <b style='color:#3FB950'>{R(a+f)}</b></span>
+                <div style='display:flex;gap:24px;font-size:12px;color:#5A6A7A;flex-wrap:wrap;margin-bottom:10px'>
+                    {"<span>Adiant: <b style='color:#F59E0B'>N/A</b></span>" if mot in SEM else f"<span>Adiant: <b style='color:#F59E0B'>{R(a)}</b></span>"}
+                    <span>Folha: <b style='color:#8B5CF6'>{R(f)}</b></span>
+                    <span>Chapas: <b style='color:#EC4899'>{R(dm["chapa"].sum())}</b></span>
+                    <span>Total comissão: <b style='color:#2ECC71'>{R(a+f)}</b></span>
                 </div>
-                <div style='background:#21262D;border-radius:3px;height:4px;margin-top:10px'>
-                    <div style='background:{cor};width:{pct}%;height:4px;border-radius:3px'></div>
+                <div style='background:#F4F6F9;border-radius:4px;height:5px'>
+                    <div style='background:{cor};width:{pct}%;height:5px;border-radius:4px'></div>
                 </div>
             </div>""", unsafe_allow_html=True)
 
-        # Exportação Excel das comissões
         st.markdown("---")
         rows_exp = []
         for mot in MOTORISTAS:
@@ -875,19 +979,13 @@ elif aba == "💳 Comissões":
             if dm.empty: continue
             fat = dm["fat_bruto"].sum()
             a, f = com(mot, fat)
-            rows_exp.append({
-                "motorista": mot, "tipo": "10% folha" if mot in SEM else "5%+5%",
+            rows_exp.append({"motorista": mot, "tipo": "10% folha" if mot in SEM else "5%+5%",
                 "viagens": len(dm), "fat_bruto": fat, "adiantamento": 0 if mot in SEM else a,
-                "folha": f, "chapas": dm["chapa"].sum(), "total_comissao": a+f
-            })
+                "folha": f, "chapas": dm["chapa"].sum(), "total_comissao": a+f})
         df_com = pd.DataFrame(rows_exp)
         try:
-            excel_buf = gerar_excel(df_com.rename(columns={
-                "motorista":"motorista","tipo":"status","viagens":"contrato",
-                "fat_bruto":"fat_bruto","adiantamento":"adiant","folha":"folha",
-                "chapas":"chapa","total_comissao":"destino"
-            }), f"Comissões {periodo}")
-            st.download_button("📊 Exportar Relatório de Comissões (.xlsx)", excel_buf,
+            excel_buf = gerar_excel(df_com, f"Comissões {periodo}")
+            st.download_button("📊 Exportar Comissões (.xlsx)", excel_buf,
                 f"comissoes_{periodo.replace('/','_')}.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         except: pass
@@ -895,10 +993,8 @@ elif aba == "💳 Comissões":
 # ══════════════════════════════════════════════════════════════════
 # PRÊMIOS
 # ══════════════════════════════════════════════════════════════════
-elif aba == "🏆 Prêmios":
-    st.markdown("# 🏆 Prêmios")
-    df, periodo, ano, mes = sel_periodo("prem")
-    st.markdown(f"<p style='color:#8B949E;margin-top:-12px'>Meta: {R(META)} · {periodo}</p>", unsafe_allow_html=True)
+elif aba == "premios":
+    st.markdown(f"<h1>🏆 Prêmios</h1><p style='color:#8896A7;margin-top:-8px'>Meta: {R(META)} · {periodo}</p>", unsafe_allow_html=True)
     if df.empty:
         st.info("Nenhum dado no período.")
     else:
@@ -908,27 +1004,25 @@ elif aba == "🏆 Prêmios":
             fat  = dm["fat_bruto"].sum()
             el   = fat >= META
             prem = prem_map.get(mot, {})
-            with st.expander(f"{'🏆' if el else '⏳'} {mot} — {R(fat)}", expanded=el):
+            with st.expander(f"{'🏆' if el else '⏳'} {mot} — {R_short(fat)}", expanded=el):
                 c1,c2,c3 = st.columns(3)
-                c1.metric("Faturamento", R(fat))
-                c2.metric("Meta", R(META))
-                c3.metric("Elegível?", "✅ SIM" if el else f"Falta {R(META - fat)}")
+                c1.metric("Faturamento", R_short(fat))
+                c2.metric("Meta", R_short(META))
+                c3.metric("Status", "✅ Elegível" if el else f"{min(fat/META*100,100):.0f}%")
                 if prem.get("status"):
-                    cor_p = {"QUALIFICADO":"#388BFD","EM ANÁLISE":"#F0883E","APROVADO":"#3FB950","PAGO":"#56D364","NÃO APROVADO":"#F85149"}.get(prem["status"],"#8B949E")
-                    st.markdown(f"""<div class='card' style='border-left:3px solid {cor_p};border-radius:0 8px 8px 0;padding:10px 14px;margin:8px 0'>
+                    cor_p = {"QUALIFICADO":"#1A7FC1","EM ANÁLISE":"#F59E0B","APROVADO":"#2ECC71","PAGO":"#10B981","NÃO APROVADO":"#E74C3C"}.get(prem["status"],"#8896A7")
+                    st.markdown(f"""<div style='background:#F8FAFC;border-left:4px solid {cor_p};border-radius:0 8px 8px 0;padding:10px 14px;margin:8px 0'>
                         <span style='color:{cor_p};font-weight:700'>{prem["status"]}</span>
-                        {f" · <span style='color:#3FB950;font-weight:700'>{R(prem.get('valor',0))}</span>" if prem.get("valor") else ""}
-                        {f"<div style='color:#8B949E;font-size:12px;margin-top:4px'>{prem['obs']}</div>" if prem.get("obs") else ""}
+                        {f" · <b style='color:#2ECC71'>{R(prem.get('valor',0))}</b>" if prem.get("valor") else ""}
+                        {f"<div style='color:#5A6A7A;font-size:12px;margin-top:4px'>{prem['obs']}</div>" if prem.get("obs") else ""}
                     </div>""", unsafe_allow_html=True)
                 if perm == "total" and el:
                     with st.form(f"fp_{mot}"):
                         pc1,pc2 = st.columns(2)
-                        ps = pc1.selectbox("Status do Prêmio", STATUS_P,
+                        ps = pc1.selectbox("Status", STATUS_P,
                             index=STATUS_P.index(prem.get("status","QUALIFICADO")) if prem.get("status") in STATUS_P else 0)
                         pv = pc2.number_input("Valor (R$)", value=float(prem.get("valor") or 0), format="%.2f")
                         po = st.text_input("Observação", value=prem.get("obs","") or "")
                         if st.form_submit_button("💾 Salvar Prêmio"):
                             if sb_post("premios", {"motorista": mot, "status": ps, "valor": pv, "obs": po}, upsert=True):
-                                st.success("✅ Prêmio salvo!")
-                                st.cache_data.clear()
-                                st.rerun()
+                                st.success("✅ Salvo!"); st.cache_data.clear(); st.rerun()
