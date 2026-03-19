@@ -383,9 +383,12 @@ CLIENTES = ["SADA","AUTOPORT","DACUNHA","BRAZUL","VIX","TRANSAUTO","TRANSZERO","
 STATUS = ["ABERTO","ADIANTADO","PENDENTE","FECHADO"]
 STATUS_P = ["QUALIFICADO","EM ANÁLISE","APROVADO","PAGO","NÃO APROVADO"]
 PERFIS = {
-    "🏢 Escritório": {"senha": "roesel2026", "perm": "total"},
+    "👤 Erick":    {"senha": "roesel2026", "perm": "total"},
+    "👤 Amanda":   {"senha": "roesel2026", "perm": "total"},
+    "👤 Anne":     {"senha": "roesel2026", "perm": "total"},
+    "👤 Mayara":   {"senha": "roesel2026", "perm": "total"},
+    "👤 Edna":     {"senha": "roesel2026", "perm": "total"},
     "👩‍💼 Claudiane": {"senha": "claudiane123", "perm": "view"},
-    "👥 Equipe": {"senha": "equipe2026", "perm": "equipe"}
 }
 STATUS_COR = {"ABERTO":"#E74C3C","ADIANTADO":"#EA8C00","PENDENTE":"#7C3AED","FECHADO":"#2ECC71"}
 
@@ -775,7 +778,7 @@ if aba == "dashboard":
 # NOVO CONTRATO
 # ══════════════════════════════════════════════════════════════════
 elif aba == "novo":
-    if perm not in ["total","equipe"]:
+    if perm != "total":
         st.warning("Sem permissão para cadastrar contratos.")
         st.stop()
 
