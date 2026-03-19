@@ -190,7 +190,7 @@ button[kind="secondary"] {
     padding: 24px !important;
 }
 
-/* ── EXPANDER ── */
+/* ── EXPANDER padrão (branco) ── */
 .streamlit-expanderHeader {
     background: white !important;
     border: 1px solid #E5E9F0 !important;
@@ -202,6 +202,28 @@ button[kind="secondary"] {
     background: #FAFBFC !important;
     border: 1px solid #E5E9F0 !important;
 }
+
+/* ── EXPANDER DARK (IA) ── */
+.expander-dark .streamlit-expanderHeader,
+[data-testid="stExpander"].dark-expander > div:first-child {
+    background: #1A3A5C !important;
+    border: 1px solid #2A5080 !important;
+    border-radius: 8px !important;
+    color: white !important;
+}
+.expander-dark .streamlit-expanderContent,
+[data-testid="stExpander"].dark-expander > div:last-child {
+    background: #0F2540 !important;
+    border: 1px solid #2A5080 !important;
+}
+
+/* Período dentro da aba — inputs brancos menores */
+.periodo-inline .stSelectbox > div > div {
+    background: white !important;
+    border: 1px solid #D1D9E6 !important;
+    font-size: 13px !important;
+}
+
 
 /* ── ALERTS ── */
 .stAlert { border-radius: 8px !important; }
@@ -483,14 +505,6 @@ with st.sidebar:
             st.session_state.aba = key
             st.rerun()
 
-    # Filtros de período
-    st.markdown("<div style='padding:16px 12px 4px;font-size:10px;font-weight:700;color:#5A8BAD;text-transform:uppercase;letter-spacing:0.1em;margin-top:8px'>Período</div>", unsafe_allow_html=True)
-    anos_list = [0] + sorted(df_all["data"].dt.year.dropna().unique().astype(int).tolist(), reverse=True) if not df_all.empty else [0, 2026]
-    ano_sel = st.selectbox("Ano", anos_list, index=1 if len(anos_list) > 1 else 0,
-        format_func=lambda x: "Todos" if x == 0 else str(x), key="sidebar_ano")
-    mes_sel = st.selectbox("Mês", [0]+list(range(1,13)), index=datetime.now().month,
-        format_func=lambda x: "Todos" if x == 0 else MESES[x-1], key="sidebar_mes")
-
     st.markdown("<br>", unsafe_allow_html=True)
     st.divider()
 
@@ -506,32 +520,43 @@ with st.sidebar:
         st.session_state.ok = False
         st.rerun()
 
-# ── FILTRAR DADOS ──────────────────────────────────────────────────
-df = df_all.copy()
-if not df_all.empty:
-    if ano_sel: df = df[df["data"].dt.year == ano_sel]
-    if mes_sel: df = df[df["data"].dt.month == mes_sel]
+# ── SELETOR DE PERÍODO INLINE ─────────────────────────────────────
+def sel_periodo(key_suffix=""):
+    """Renderiza seletor de Ano/Mês inline dentro da aba."""
+    anos_list = [0] + sorted(df_all["data"].dt.year.dropna().unique().astype(int).tolist(), reverse=True) if not df_all.empty else [0, 2026]
+    c1, c2, c3 = st.columns([1, 1, 4])
+    with c1:
+        ano = st.selectbox("Ano", anos_list, index=1 if len(anos_list) > 1 else 0,
+            format_func=lambda x: "Todos os anos" if x == 0 else str(x),
+            key=f"ano_{key_suffix}")
+    with c2:
+        mes = st.selectbox("Mês", [0] + list(range(1, 13)),
+            index=datetime.now().month,
+            format_func=lambda x: "Todos" if x == 0 else MESES[x - 1],
+            key=f"mes_{key_suffix}")
+    periodo = f"{MESES[mes-1]}/{ano}" if mes and ano else \
+              (MESES[mes-1] if mes else (str(ano) if ano else "Todos os períodos"))
+    dfp = df_all.copy()
+    if not df_all.empty:
+        if ano: dfp = dfp[dfp["data"].dt.year == ano]
+        if mes: dfp = dfp[dfp["data"].dt.month == mes]
+    return dfp, periodo
 
-periodo = f"{MESES[mes_sel-1]}/{ano_sel}" if mes_sel and ano_sel else \
-          (MESES[mes_sel-1] if mes_sel else (str(ano_sel) if ano_sel else "Todos os períodos"))
 aba = st.session_state.aba
 
 # ══════════════════════════════════════════════════════════════════
 # DASHBOARD
 # ══════════════════════════════════════════════════════════════════
 if aba == "dashboard":
-    # Cabeçalho
-    st.markdown(f"""
-    <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:24px'>
-        <div>
-            <h1 style='margin:0'>Visão Geral</h1>
-            <p style='margin:4px 0 0;color:#8896A7;font-size:13px'>📅 {periodo}</p>
-        </div>
-        <div style='background:white;border:1px solid #E5E9F0;border-radius:8px;padding:8px 16px;font-size:13px;color:#5A6A7A;font-weight:500'>
-            Última atualização: {datetime.now().strftime("%d/%m %H:%M")}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # Cabeçalho + seletor período
+    col_h1, col_h2 = st.columns([3, 1])
+    with col_h1:
+        st.markdown("<h1 style='margin:0 0 4px'>Visão Geral</h1>", unsafe_allow_html=True)
+    with col_h2:
+        st.markdown(f"<div style='text-align:right;padding:6px 0;font-size:12px;color:#8896A7'>🕐 {datetime.now().strftime('%d/%m %H:%M')}</div>", unsafe_allow_html=True)
+
+    df, periodo = sel_periodo("dash")
+    st.markdown(f"<p style='color:#8896A7;font-size:13px;margin:-4px 0 20px'>📅 {periodo} &nbsp;·&nbsp; {len(df)} contratos</p>", unsafe_allow_html=True)
 
     if df.empty:
         st.info(f"Nenhum dado encontrado para {periodo}.")
@@ -686,13 +711,58 @@ elif aba == "novo":
         st.warning("Sem permissão para cadastrar contratos.")
         st.stop()
 
-    st.markdown(f"<h1>➕ Novo Contrato</h1><p style='color:#8896A7;margin-top:-8px'>Cadastre um novo contrato de transporte</p>", unsafe_allow_html=True)
+    st.markdown("<h1>➕ Novo Contrato</h1><p style='color:#8896A7;margin-top:-8px'>Cadastre um novo contrato de transporte</p>", unsafe_allow_html=True)
+
+    # CSS escuro só para o expander da IA
+    st.markdown("""
+    <style>
+    [data-testid="stExpander"]:first-of-type > div:first-child {
+        background: #1A3A5C !important;
+        border: 1px solid #2A5A8C !important;
+        border-radius: 10px !important;
+    }
+    [data-testid="stExpander"]:first-of-type > div:first-child p,
+    [data-testid="stExpander"]:first-of-type > div:first-child span,
+    [data-testid="stExpander"]:first-of-type > div:first-child svg {
+        color: white !important;
+        fill: white !important;
+    }
+    [data-testid="stExpander"]:first-of-type > div:last-child {
+        background: #0F2540 !important;
+        border: 1px solid #2A5A8C !important;
+        border-top: none !important;
+        border-radius: 0 0 10px 10px !important;
+        padding: 20px !important;
+    }
+    [data-testid="stExpander"]:first-of-type > div:last-child p,
+    [data-testid="stExpander"]:first-of-type > div:last-child label,
+    [data-testid="stExpander"]:first-of-type > div:last-child span:not([class*="badge"]) {
+        color: #B8CDE0 !important;
+    }
+    [data-testid="stExpander"]:first-of-type input,
+    [data-testid="stExpander"]:first-of-type textarea,
+    [data-testid="stExpander"]:first-of-type [data-baseweb="select"] > div {
+        background: #1E4976 !important;
+        border-color: #2A5A8C !important;
+        color: white !important;
+    }
+    [data-testid="stExpander"]:first-of-type .stButton > button {
+        background: #1A7FC1 !important;
+        color: white !important;
+    }
+    [data-testid="stExpander"]:first-of-type [data-testid="stAlert"] {
+        background: rgba(255,255,255,0.08) !important;
+        border-color: rgba(255,255,255,0.2) !important;
+        color: #B8CDE0 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     with st.expander("📷 Importar via IA (Foto / PDF)", expanded=False):
         if not ANTHROPIC_KEY:
             st.warning("⚠️ Configure `ANTHROPIC_KEY` nos Secrets do Streamlit para usar a leitura automática.")
         else:
-            st.markdown("<p style='color:#5A6A7A;font-size:13px'>Envie uma foto ou PDF do contrato — a IA preenche os campos automaticamente.</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color:#7AADCC;font-size:13px'>Envie uma foto ou PDF do contrato — a IA preenche os campos automaticamente.</p>", unsafe_allow_html=True)
         upl = st.file_uploader("Arquivo do contrato", type=["jpg","jpeg","png","webp","pdf"])
         if upl:
             col_a, col_b = st.columns([2,1])
@@ -779,7 +849,9 @@ elif aba == "novo":
 # CONTRATOS
 # ══════════════════════════════════════════════════════════════════
 elif aba == "contratos":
-    st.markdown(f"<h1>📋 Contratos</h1><p style='color:#8896A7;margin-top:-8px'>{periodo}</p>", unsafe_allow_html=True)
+    st.markdown("<h1>📋 Contratos</h1>", unsafe_allow_html=True)
+    df, periodo = sel_periodo("cont")
+    st.markdown(f"<p style='color:#8896A7;margin-top:-8px'>📅 {periodo}</p>", unsafe_allow_html=True)
 
     c1,c2,c3 = st.columns(3)
     busca = c1.text_input("🔍 Buscar", "", placeholder="Motorista, nº contrato, destino…")
@@ -873,6 +945,7 @@ elif aba == "contratos":
 # ══════════════════════════════════════════════════════════════════
 elif aba == "motorista":
     st.markdown("<h1>👤 Por Motorista</h1>", unsafe_allow_html=True)
+    df, periodo = sel_periodo("mot")
     if df.empty:
         st.info("Nenhum dado no período.")
     else:
@@ -941,7 +1014,9 @@ elif aba == "motorista":
 # COMISSÕES
 # ══════════════════════════════════════════════════════════════════
 elif aba == "comissoes":
-    st.markdown(f"<h1>💳 Comissões</h1><p style='color:#8896A7;margin-top:-8px'>{periodo}</p>", unsafe_allow_html=True)
+    st.markdown("<h1>💳 Comissões</h1>", unsafe_allow_html=True)
+    df, periodo = sel_periodo("com")
+    st.markdown(f"<p style='color:#8896A7;margin-top:-8px'>📅 {periodo}</p>", unsafe_allow_html=True)
     if df.empty:
         st.info("Nenhum dado no período.")
     else:
@@ -994,7 +1069,9 @@ elif aba == "comissoes":
 # PRÊMIOS
 # ══════════════════════════════════════════════════════════════════
 elif aba == "premios":
-    st.markdown(f"<h1>🏆 Prêmios</h1><p style='color:#8896A7;margin-top:-8px'>Meta: {R(META)} · {periodo}</p>", unsafe_allow_html=True)
+    st.markdown(f"<h1>🏆 Prêmios</h1>", unsafe_allow_html=True)
+    df, periodo = sel_periodo("prem")
+    st.markdown(f"<p style='color:#8896A7;margin-top:-8px'>Meta: {R(META)} · 📅 {periodo}</p>", unsafe_allow_html=True)
     if df.empty:
         st.info("Nenhum dado no período.")
     else:
