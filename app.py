@@ -287,18 +287,16 @@ with nav_col[0]:
 for i, a in enumerate(ABAS):
     with nav_col[i+1]:
         ativo = st.session_state.aba == a
-        if st.button(a.split(" ",1)[-1], key=f"nav_{i}", 
+        if st.button(a.split(" ",1)[-1], key=f"nav_{i}",
             use_container_width=True,
             type="primary" if ativo else "secondary"):
             st.session_state.aba = a
             st.rerun()
 
 with nav_col[7]:
-    ano = st.selectbox("", anos_list, index=1 if len(anos_list)>1 else 0,
-        format_func=lambda x: "Todos" if x==0 else str(x), label_visibility="collapsed")
+    st.markdown("")
 with nav_col[8]:
-    mes = st.selectbox("", [0]+list(range(1,13)), index=datetime.now().month,
-        format_func=lambda x: "Todos" if x==0 else MESES[x-1][:3], label_visibility="collapsed")
+    st.markdown(f'<div style="text-align:right;padding:8px 0"><span style="background:#21262D;border:1px solid #30363D;border-radius:20px;padding:4px 12px;font-size:12px;color:#C9D1D9">{perfil_nome}</span></div>', unsafe_allow_html=True)
 with nav_col[9]:
     if st.button("🚪", help="Sair", use_container_width=True):
         st.session_state.ok = False
@@ -308,11 +306,11 @@ st.markdown('<hr style="margin:8px 0;border-color:#30363D">', unsafe_allow_html=
 aba = st.session_state.aba
 
 # Filtrar
+# Período será definido em cada aba individualmente
+ano = 0
+mes = 0
 df = df_all.copy()
-if not df.empty:
-    if ano: df = df[df["data"].dt.year == ano]
-    if mes: df = df[df["data"].dt.month == mes]
-periodo = f"{MESES[mes-1]}/{ano}" if mes and ano else "Todos os períodos"
+periodo = "Todos os períodos"
 
 # Tema dos gráficos
 PLOT_LAYOUT = dict(
@@ -324,8 +322,30 @@ PLOT_LAYOUT = dict(
 )
 
 # ── DASHBOARD ─────────────────────────────────────────────────────
+def sel_periodo(key_suffix=""):
+    """Seletor de período reutilizável"""
+    anos_list = [0] + sorted(df_all["data"].dt.year.dropna().unique().astype(int).tolist(), reverse=True) if not df_all.empty else [0, 2026]
+    c1, c2, c3 = st.columns([1, 1, 4])
+    with c1:
+        ano = st.selectbox("📅 Ano", anos_list,
+            index=1 if len(anos_list) > 1 else 0,
+            format_func=lambda x: "Todos os anos" if x == 0 else str(x),
+            key=f"ano_{key_suffix}")
+    with c2:
+        mes = st.selectbox("🗓️ Mês", [0] + list(range(1, 13)),
+            index=datetime.now().month,
+            format_func=lambda x: "Todos os meses" if x == 0 else MESES[x - 1],
+            key=f"mes_{key_suffix}")
+    periodo = f"{MESES[mes-1]}/{ano}" if mes and ano else ("Todos os anos" if not mes and not ano else MESES[mes-1] if mes else str(ano))
+    df = df_all.copy()
+    if not df_all.empty:
+        if ano: df = df[df["data"].dt.year == ano]
+        if mes: df = df[df["data"].dt.month == mes]
+    return df, periodo, ano, mes
+
 if aba == "📊 Dashboard":
-    st.markdown(f"# 📊 Dashboard")
+    st.markdown("# 📊 Dashboard")
+    df, periodo, ano, mes = sel_periodo("dash")
     st.markdown(f"<p style='color:#8B949E;margin-top:-16px'>{periodo} · {len(df)} contratos</p>", unsafe_allow_html=True)
 
     if df.empty:
@@ -491,7 +511,8 @@ elif aba == "➕ Novo Contrato":
 
 # ── CONTRATOS ─────────────────────────────────────────────────────
 elif aba == "📋 Contratos":
-    st.markdown(f"# 📋 Contratos")
+    st.markdown("# 📋 Contratos")
+    df, periodo, ano, mes = sel_periodo("cont")
     st.markdown(f"<p style='color:#8B949E;margin-top:-16px'>{periodo}</p>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     busca = c1.text_input("🔍 Buscar", "", placeholder="Motorista, contrato...")
@@ -546,6 +567,7 @@ elif aba == "📋 Contratos":
 # ── POR MOTORISTA ─────────────────────────────────────────────────
 elif aba == "👤 Por Motorista":
     st.markdown("# 👤 Por Motorista")
+    df, periodo, ano, mes = sel_periodo("mot")
     if df.empty:
         st.info("Nenhum dado no período.")
     else:
@@ -591,6 +613,7 @@ elif aba == "👤 Por Motorista":
 # ── COMISSÕES ─────────────────────────────────────────────────────
 elif aba == "💳 Comissões":
     st.markdown("# 💳 Comissões")
+    df, periodo, ano, mes = sel_periodo("com")
     st.markdown(f"<p style='color:#8B949E;margin-top:-16px'>{periodo}</p>", unsafe_allow_html=True)
     if df.empty:
         st.info("Nenhum dado no período.")
@@ -629,6 +652,7 @@ elif aba == "💳 Comissões":
 # ── PRÊMIOS ───────────────────────────────────────────────────────
 elif aba == "🏆 Prêmios":
     st.markdown("# 🏆 Prêmios")
+    df, periodo, ano, mes = sel_periodo("prem")
     st.markdown(f"<p style='color:#8B949E;margin-top:-16px'>Meta: {R(META)} · {periodo}</p>", unsafe_allow_html=True)
     if df.empty:
         st.info("Nenhum dado no período.")
