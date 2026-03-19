@@ -499,134 +499,98 @@ if "ok" not in st.session_state:
     st.session_state.ok = False
 
 if not st.session_state.ok:
-    # ── CSS exclusivo da tela de login ─────────────────────────────
+    # ── CSS do login ────────────────────────────────────────────────
     st.markdown(f"""
     <style>
-    /* Fundo da tela de login com marca d'água da logo */
     .stApp {{
         background-color: #0F1624 !important;
     }}
-    /* Overlay escuro sobre a marca d'água */
     .stApp::before {{
         content: '';
         position: fixed;
         inset: 0;
-        background: linear-gradient(135deg,
-            rgba(9,11,25,0.91) 0%,
-            rgba(15,18,35,0.88) 40%,
-            rgba(22,10,10,0.91) 100%);
+        background: linear-gradient(135deg,rgba(9,11,25,0.92) 0%,rgba(15,18,35,0.89) 50%,rgba(22,10,10,0.92) 100%);
         z-index: 0;
         pointer-events: none;
     }}
-    /* Oculta sidebar no login */
-    [data-testid="stSidebar"], [data-testid="collapsedControl"] {{ display: none !important; }}
-    /* Ajusta padding do container */
-    .main .block-container {{ padding: 0 !important; max-width: 100% !important; }}
-    /* Inputs do login com tema escuro */
-    .stTextInput input, .stSelectbox > div > div {{
-        background: rgba(255,255,255,0.07) !important;
-        border: 1.5px solid rgba(255,255,255,0.12) !important;
-        color: white !important;
-        border-radius: 10px !important;
+    [data-testid="stSidebar"],[data-testid="collapsedControl"]{{display:none!important}}
+    .main .block-container{{padding:2rem 1rem!important;max-width:100%!important}}
+    .login-card{{
+        background:rgba(15,18,35,0.85);
+        backdrop-filter:blur(24px);
+        -webkit-backdrop-filter:blur(24px);
+        border-radius:22px;
+        border:1px solid rgba(255,255,255,0.09);
+        box-shadow:0 32px 80px rgba(0,0,0,0.65),0 0 0 1px rgba(185,28,28,0.18);
+        overflow:hidden;
+        padding:0 0 36px 0;
+        margin-bottom:0;
     }}
-    .stTextInput input:focus {{
-        border-color: #DC2626 !important;
-        box-shadow: 0 0 0 3px rgba(220,38,38,0.20) !important;
+    .login-stripe{{height:3px;background:linear-gradient(90deg,#7F1D1D,#DC2626,#9B1C1C);margin-bottom:0;}}
+    .login-inner{{padding:44px 44px 28px;text-align:center;}}
+    .login-logo-wrap{{
+        background:rgba(255,255,255,0.04);
+        border-radius:14px;
+        padding:18px 22px;
+        display:inline-block;
+        margin-bottom:28px;
+        border:1px solid rgba(255,255,255,0.07);
     }}
-    .stTextInput label, .stSelectbox label {{ color: rgba(255,255,255,0.6) !important; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.06em !important; text-transform: uppercase !important; }}
-    /* Botão de login */
-    .stButton > button {{
-        background: linear-gradient(135deg, #9B1C1C 0%, #B91C1C 100%) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 10px !important;
-        font-weight: 700 !important;
-        font-size: 14px !important;
-        padding: 13px 20px !important;
-        letter-spacing: 0.04em !important;
-        box-shadow: 0 4px 20px rgba(185,28,28,0.45) !important;
-        transition: all 0.2s !important;
+    .login-logo-wrap img{{max-width:200px;width:100%;display:block;filter:brightness(0) invert(1);opacity:0.94;border-radius:5px;}}
+    .login-tag{{font-size:11px;color:rgba(220,38,38,0.9);letter-spacing:0.14em;text-transform:uppercase;font-weight:700;margin-bottom:5px;}}
+    .login-title{{font-size:21px;color:white;font-weight:800;letter-spacing:-0.01em;margin-bottom:4px;}}
+    .login-sub{{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:30px;}}
+    .login-divider{{height:1px;background:linear-gradient(90deg,transparent,rgba(185,28,28,0.35),rgba(156,163,175,0.15),transparent);margin-bottom:0;}}
+    .login-fields{{padding:28px 44px 0;}}
+    .login-footer{{text-align:center;margin-top:22px;font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:0.05em;padding:0 44px;}}
+    /* inputs dark */
+    .stTextInput input,.stSelectbox>div>div{{
+        background:rgba(255,255,255,0.07)!important;
+        border:1.5px solid rgba(255,255,255,0.12)!important;
+        color:white!important;border-radius:10px!important;
     }}
-    .stButton > button:hover {{
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 28px rgba(185,28,28,0.55) !important;
+    .stTextInput input:focus{{border-color:#DC2626!important;box-shadow:0 0 0 3px rgba(220,38,38,0.2)!important;}}
+    .stTextInput label,.stSelectbox label{{color:rgba(255,255,255,0.55)!important;font-size:12px!important;font-weight:600!important;letter-spacing:0.06em!important;text-transform:uppercase!important;}}
+    .stSelectbox svg{{color:white!important;fill:white!important;}}
+    /* botão */
+    .stButton>button{{
+        background:linear-gradient(135deg,#9B1C1C 0%,#B91C1C 100%)!important;
+        color:white!important;border:none!important;border-radius:10px!important;
+        font-weight:700!important;font-size:14px!important;padding:13px 20px!important;
+        letter-spacing:0.04em!important;box-shadow:0 4px 20px rgba(185,28,28,0.45)!important;
+        transition:all 0.2s!important;
     }}
+    .stButton>button:hover{{transform:translateY(-2px)!important;box-shadow:0 8px 28px rgba(185,28,28,0.55)!important;}}
     </style>
+    <div class="login-card">
+        <div class="login-stripe"></div>
+        <div class="login-inner">
+            <div class="login-logo-wrap">
+                <img src="data:image/jpeg;base64,{LOGO_B64}">
+            </div>
+            <div class="login-tag">Sistema de Gestão</div>
+            <div class="login-title">Carlos Roesel Transportes</div>
+            <div class="login-sub">Controle de contratos e comissões</div>
+            <div class="login-divider"></div>
+        </div>
+    </div>
     """, unsafe_allow_html=True)
 
-    # Layout de tela cheia centralizado
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    # Inputs Streamlit (separados do HTML)
     col_l, col_m, col_r = st.columns([1, 1.1, 1])
     with col_m:
-        # Card principal do login
-        st.markdown(f"""
-        <div style='
-            background: rgba(15,18,35,0.82);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.08);
-            box-shadow: 0 32px 80px rgba(0,0,0,0.60), 0 0 0 1px rgba(220,38,38,0.15);
-            overflow: hidden;
-            position: relative;
-        '>
-            <!-- Faixa vermelha topo -->
-            <div style='height:3px;background:linear-gradient(90deg,#7F1D1D,#DC2626,#9B1C1C);'></div>
-
-            <div style='padding: 48px 44px 40px; text-align: center;'>
-                <!-- Logo como identidade, bem visível -->
-                <div style='
-                    background: rgba(255,255,255,0.04);
-                    border-radius: 16px;
-                    padding: 20px 24px;
-                    display: inline-block;
-                    margin-bottom: 32px;
-                    border: 1px solid rgba(255,255,255,0.06);
-                '>
-                    <img src="data:image/jpeg;base64,{LOGO_B64}"
-                         style='max-width:200px;width:100%;display:block;
-                                filter:brightness(0) invert(1);
-                                border-radius:6px;
-                                opacity:0.95;'>
-                </div>
-
-                <!-- Título -->
-                <div style='font-size:11px;color:rgba(220,38,38,0.9);letter-spacing:0.14em;
-                            text-transform:uppercase;font-weight:700;margin-bottom:6px;'>
-                    Sistema de Gestão
-                </div>
-                <div style='font-size:22px;color:white;font-weight:800;letter-spacing:-0.01em;margin-bottom:4px;'>
-                    Carlos Roesel Transportes
-                </div>
-                <div style='font-size:13px;color:rgba(255,255,255,0.38);margin-bottom:36px;'>
-                    Controle de contratos e comissões
-                </div>
-
-                <!-- Divisor com degradê -->
-                <div style='height:1px;background:linear-gradient(90deg,transparent,rgba(220,38,38,0.3),rgba(156,163,175,0.2),transparent);margin-bottom:32px;'></div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Inputs fora do HTML para o Streamlit funcionar
-        with st.container():
-            st.markdown("<div style='background:rgba(15,18,35,0.82);backdrop-filter:blur(20px);border-radius:0 0 24px 24px;border:1px solid rgba(255,255,255,0.08);border-top:none;padding:0 44px 44px;margin-top:-2px;box-shadow:0 32px 80px rgba(0,0,0,0.60);'>", unsafe_allow_html=True)
-            p = st.selectbox("Perfil", list(PERFIS.keys()))
-            s = st.text_input("Senha", type="password", placeholder="••••••••••")
-            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-            if st.button("Entrar no sistema  →", use_container_width=True):
-                if s == PERFIS[p]["senha"]:
-                    st.session_state.ok = True
-                    st.session_state.perfil = p
-                    st.session_state.perm = PERFIS[p]["perm"]
-                    st.rerun()
-                else:
-                    st.error("Senha incorreta. Verifique e tente novamente.")
-            st.markdown("""
-            <div style='text-align:center;margin-top:20px;font-size:11px;color:rgba(255,255,255,0.22);letter-spacing:0.05em;'>
-                🔒 Acesso restrito · Roesel Transportes © 2025
-            </div>
-            </div>""", unsafe_allow_html=True)
+        p = st.selectbox("Perfil", list(PERFIS.keys()))
+        s = st.text_input("Senha", type="password", placeholder="••••••••••")
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Entrar no sistema →", use_container_width=True):
+            if s == PERFIS[p]["senha"]:
+                st.session_state.ok = True
+                st.session_state.perfil = p
+                st.session_state.perm = PERFIS[p]["perm"]
+                st.rerun()
+            else:
+                st.error("Senha incorreta. Verifique e tente novamente.")
+        st.markdown("<div style='text-align:center;margin-top:16px;font-size:11px;color:rgba(255,255,255,0.22);letter-spacing:0.05em;'>🔒 Acesso restrito · Roesel Transportes © 2025</div>", unsafe_allow_html=True)
     st.stop()
 
 perm = st.session_state.perm
