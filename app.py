@@ -8,7 +8,7 @@ from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
 
-st.set_page_config(page_title="Roesel Transportes", page_icon="🚛", layout="wide")
+st.set_page_config(page_title="Roesel Transportes", page_icon="🚛", layout="wide", initial_sidebar_state="collapsed")
 
 # ── DARK MODE CSS ─────────────────────────────────────────────────
 st.markdown("""
@@ -82,6 +82,34 @@ h2, h3 { color: #C9D1D9 !important; }
 
 /* Caption */
 .stCaption { color: #8B949E !important; }
+
+/* Esconder sidebar toggle */
+[data-testid="collapsedControl"] { display: none !important; }
+section[data-testid="stSidebar"] { display: none !important; }
+
+/* Menu horizontal no topo */
+.top-nav {
+    display: flex; align-items: center; gap: 0;
+    background: #161B22; border-bottom: 1px solid #30363D;
+    padding: 0 24px; position: sticky; top: 0; z-index: 999;
+    margin: -1rem -1rem 1rem -1rem;
+}
+.top-nav-logo { padding: 10px 20px 10px 0; border-right: 1px solid #30363D; }
+.top-nav-logo img { height: 36px; }
+.top-nav-menu { display: flex; flex: 1; gap: 0; padding: 0 12px; }
+.top-nav-btn {
+    padding: 14px 16px; color: #8B949E; font-size: 13px; font-weight: 600;
+    cursor: pointer; border-bottom: 2px solid transparent;
+    transition: all 0.15s; white-space: nowrap; text-decoration: none;
+}
+.top-nav-btn:hover { color: #E6EDF3; }
+.top-nav-btn.active { color: #E05252; border-bottom: 2px solid #8B1A1A; }
+.top-nav-period { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+.top-nav-user {
+    padding: 6px 14px; border-radius: 20px;
+    background: #21262D; color: #C9D1D9; font-size: 12px; font-weight: 600;
+    border: 1px solid #30363D;
+}
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -191,10 +219,11 @@ if "ok" not in st.session_state:
 
 if not st.session_state.ok:
     st.markdown(f"""
-    <div style='display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 0 20px'>
-        <div style='background:#161B22;border:1px solid #30363D;border-radius:16px;padding:48px 40px;width:400px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)'>
-            <img src="data:image/png;base64,{LOGO_B64}" style="max-width:220px;width:100%;margin-bottom:24px">
-            <p style='color:#8B949E;font-size:12px;margin:0'>CNPJ 66.330.549/0001-52 — Sistema de Controle</p>
+    <div style='display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 0 20px'>
+        <div style='background:#161B22;border:1px solid #30363D;border-radius:20px;padding:56px 48px;width:440px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.6)'>
+            <img src="data:image/png;base64,{LOGO_B64}" style="max-width:300px;width:100%;margin-bottom:28px">
+            <div style='font-size:20px;font-weight:800;color:#E6EDF3;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px'>Sistema de Controle</div>
+            <div style='font-size:13px;color:#8B949E;letter-spacing:0.05em'>Gestão de Contratos e Frota</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -237,43 +266,46 @@ df_all = get_df()
 prem_map = get_premios()
 
 # ── SIDEBAR ───────────────────────────────────────────────────────
-with st.sidebar:
-    st.markdown(f"""
-    <div style='padding:16px 0 12px;text-align:center'>
-        <img src="data:image/png;base64,{LOGO_B64}" style="max-width:160px;width:100%;filter:brightness(0.9)">
-    </div>
-    """, unsafe_allow_html=True)
-    
-    perfil_nome = st.session_state.perfil.split(" ", 1)[-1] if " " in st.session_state.perfil else st.session_state.perfil
-    st.markdown(f"""
-    <div style='background:#21262D;border:1px solid #30363D;border-radius:8px;padding:10px 12px;margin-bottom:16px'>
-        <div style='font-size:12px;color:#8B949E'>Logado como</div>
-        <div style='font-size:13px;font-weight:700;color:#58A6FF'>{perfil_nome}</div>
-    </div>
-    """, unsafe_allow_html=True)
+# ── MENU HORIZONTAL NO TOPO ──────────────────────────────────────
+if "aba" not in st.session_state:
+    st.session_state.aba = "📊 Dashboard"
 
-    st.markdown("**📅 Período**")
-    anos = [0] + sorted(df_all["data"].dt.year.dropna().unique().astype(int).tolist(), reverse=True) if not df_all.empty else [0, 2026]
-    ano = st.selectbox("Ano", anos, index=1 if len(anos) > 1 else 0, format_func=lambda x: "Todos os anos" if x == 0 else str(x))
-    mes = st.selectbox("Mês", [0] + list(range(1, 13)), index=datetime.now().month, format_func=lambda x: "Todos os meses" if x == 0 else MESES[x - 1])
-    
-    if not df_all.empty:
-        df_p = df_all.copy()
-        if ano: df_p = df_p[df_p["data"].dt.year == ano]
-        if mes: df_p = df_p[df_p["data"].dt.month == mes]
-        st.markdown(f"""
-        <div style='background:#21262D;border:1px solid #30363D;border-radius:8px;padding:8px 12px;margin:8px 0'>
-            <div style='font-size:11px;color:#8B949E'>{len(df_p)} contratos</div>
-            <div style='font-size:13px;font-weight:700;color:#3FB950'>{R(df_p["fat_bruto"].sum())}</div>
-        </div>
-        """, unsafe_allow_html=True)
+perfil_nome = st.session_state.perfil.split(" ", 1)[-1] if " " in st.session_state.perfil else st.session_state.perfil
 
-    st.markdown("---")
-    aba = st.radio("", ["📊 Dashboard", "➕ Novo Contrato", "📋 Contratos", "👤 Por Motorista", "💳 Comissões", "🏆 Prêmios"], label_visibility="collapsed")
-    st.markdown("---")
-    if st.button("🚪 Sair", use_container_width=True):
+# Filtros de período
+col_ano, col_mes = st.columns([1,1]) if False else (None, None)
+anos_list = [0] + sorted(df_all["data"].dt.year.dropna().unique().astype(int).tolist(), reverse=True) if not df_all.empty else [0, 2026]
+
+# Linha do topo com logo + menu + período + usuário
+ABAS = ["📊 Dashboard", "➕ Novo Contrato", "📋 Contratos", "👤 Por Motorista", "💳 Comissões", "🏆 Prêmios"]
+
+# Botões de navegação em colunas
+nav_col = st.columns([2] + [1]*6 + [1.5, 1.5, 1])
+with nav_col[0]:
+    st.markdown(f'<img src="data:image/png;base64,{LOGO_B64}" style="height:40px;margin-top:4px">', unsafe_allow_html=True)
+
+for i, a in enumerate(ABAS):
+    with nav_col[i+1]:
+        ativo = st.session_state.aba == a
+        if st.button(a.split(" ",1)[-1], key=f"nav_{i}", 
+            use_container_width=True,
+            type="primary" if ativo else "secondary"):
+            st.session_state.aba = a
+            st.rerun()
+
+with nav_col[7]:
+    ano = st.selectbox("", anos_list, index=1 if len(anos_list)>1 else 0,
+        format_func=lambda x: "Todos" if x==0 else str(x), label_visibility="collapsed")
+with nav_col[8]:
+    mes = st.selectbox("", [0]+list(range(1,13)), index=datetime.now().month,
+        format_func=lambda x: "Todos" if x==0 else MESES[x-1][:3], label_visibility="collapsed")
+with nav_col[9]:
+    if st.button("🚪", help="Sair", use_container_width=True):
         st.session_state.ok = False
         st.rerun()
+
+st.markdown('<hr style="margin:8px 0;border-color:#30363D">', unsafe_allow_html=True)
+aba = st.session_state.aba
 
 # Filtrar
 df = df_all.copy()
