@@ -370,6 +370,22 @@ def sb_delete(t, f):
         return r.ok
     except: return False
 
+def sb_patch_safe(t, f, d):
+    """Versão segura — não salva no banco se for demo"""
+    if st.session_state.get("perm") == "demo":
+        return True  # Simula sucesso sem salvar
+    return sb_patch(t, f, d)
+
+def sb_post_safe(t, d, upsert=False):
+    if st.session_state.get("perm") == "demo":
+        return True
+    return sb_post(t, d, upsert)
+
+def sb_delete_safe(t, f):
+    if st.session_state.get("perm") == "demo":
+        return True
+    return sb_delete(t, f)
+
 # ── LEITURA IA ─────────────────────────────────────────────────────
 def ler_contrato_ia(img_bytes, media_type="image/jpeg"):
     if not ANTHROPIC_KEY:
@@ -420,6 +436,7 @@ PERFIS = {
     "👤 Mayara":   {"senha": "roesel2026", "perm": "total"},
     "👤 Edna":     {"senha": "roesel2026", "perm": "total"},
     "👩‍💼 Claudiane": {"senha": "claudiane123", "perm": "view"},
+    "🔍 Teste":    {"senha": "teste123", "perm": "demo"},
 }
 STATUS_COR = {"ABERTO":"#E74C3C","ADIANTADO":"#EA8C00","PENDENTE":"#7C3AED","FECHADO":"#2ECC71"}
 
@@ -553,6 +570,9 @@ if not st.session_state.ok:
     st.stop()
 
 perm = st.session_state.perm
+
+if perm == "demo":
+    st.info("🔍 **Modo Demonstração** — Você pode visualizar e editar, mas as alterações não serão salvas.")
 
 # ── Logo como marca d'água (só para usuários logados) ─────────────
 st.markdown(f"""
@@ -950,7 +970,7 @@ elif aba == "novo":
                         "adiantamento_pago": adpago,
                         "dt_pagamento": str(dt_pag) if dt_pag else None,
                         "status": sts, "obs": obs}
-                if sb_post("contratos", novo):
+                if sb_post_safe("contratos", novo):
                     st.success(f"✅ Contrato {cont} salvo!")
                     st.cache_data.clear()
                     st.session_state.pop("ia", None)
@@ -966,7 +986,7 @@ elif aba == "contratos":
     df, periodo = sel_periodo("cont")
     st.markdown(f"<p style='color:#8896A7;margin-top:-8px'>{periodo}</p>", unsafe_allow_html=True)
 
-    if perm == "total":
+    if perm in ("total", "demo"):
         sc1, sc2, sc3, sc4 = st.columns([2, 1, 1, 2])
         busca = sc1.text_input("🔍 Buscar", "", placeholder="Motorista, nº contrato, destino…")
         fs = sc2.selectbox("Status", ["Todos"] + STATUS)
@@ -1068,13 +1088,13 @@ elif aba == "contratos":
                         "dt_pagamento": str(edtpag) if edtpag else None,
                         "adiantamento_pago": ea_pago, "obs": eobs
                     }
-                    if sb_patch("contratos", f"id=eq.{row['id']}", payload):
+                    if sb_patch_safe("contratos", f"id=eq.{row['id']}", payload):
                         st.session_state.pop("edit_contrato_id", None)
                         st.cache_data.clear()
                         st.success("✅ Contrato atualizado!")
                         st.rerun()
                 if sc2.form_submit_button("🗑️ Excluir contrato", use_container_width=True):
-                    if sb_delete("contratos", f"id=eq.{row['id']}"):
+                    if sb_delete_safe("contratos", f"id=eq.{row['id']}"):
                         st.session_state.pop("edit_contrato_id", None)
                         st.cache_data.clear()
                         st.rerun()
@@ -1091,7 +1111,7 @@ elif aba == "contratos":
             ds["chapa"] = ds["chapa"].apply(R)
             ds.columns = ["MOTORISTA","CLIENTE","CONTRATO","DATA","FAT. BRUTO","CHAPA","ORIGEM","DESTINO","STATUS"][:len(cols)]
 
-            if perm == "total":
+            if perm in ("total", "demo"):
                 sel_result = st.dataframe(
                     ds, use_container_width=True, hide_index=True,
                     on_select="rerun", selection_mode="single-row",
@@ -1329,5 +1349,5 @@ elif aba == "premios":
                         pv = pc2.number_input("Valor (R$)", value=float(prem.get("valor") or 0), format="%.2f")
                         po = st.text_input("Observação", value=prem.get("obs","") or "")
                         if st.form_submit_button("Salvar Prêmio"):
-                            if sb_post("premios", {"motorista": mot, "status": ps, "valor": pv, "obs": po}, upsert=True):
+                            if sb_post_safe("premios", {"motorista": mot, "status": ps, "valor": pv, "obs": po}, upsert=True):
                                 st.success("✅ Salvo!"); st.cache_data.clear(); st.rerun()
