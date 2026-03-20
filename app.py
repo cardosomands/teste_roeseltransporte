@@ -990,35 +990,6 @@ elif aba == "novo":
     if ia:
         st.success("📋 Campos preenchidos pela IA — confira e salve.")
 
-    # Recalcula lista
-    MOTORISTAS = sorted(set(_MOTORISTAS_BASE + st.session_state.motoristas_extra))
-
-    # ── Botão cadastrar motorista acima do form ────────────────────
-    if st.button("Cadastrar motorista", key="nc_btn_toggle_cad"):
-        st.session_state["nc_show_cad_mot"] = not st.session_state.get("nc_show_cad_mot", False)
-
-    if st.session_state.get("nc_show_cad_mot", False):
-        with st.container():
-            st.markdown("<div style='background:white;border:1px solid #E5E7EB;border-radius:12px;padding:20px;margin-bottom:16px'>", unsafe_allow_html=True)
-            st.markdown("**Cadastrar novo motorista**")
-            nc1, nc2 = st.columns([3, 2])
-            novo_mot_nc = nc1.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA", key="nc_novo_mot_nome").strip().upper()
-            tipo_nc = nc2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="nc_novo_mot_tipo")
-            if st.button("Salvar motorista", key="nc_btn_salvar_mot"):
-                if not novo_mot_nc:
-                    st.error("Digite o nome do motorista.")
-                elif novo_mot_nc in MOTORISTAS:
-                    st.warning(f"'{novo_mot_nc}' já existe.")
-                else:
-                    st.session_state.motoristas_extra.append(novo_mot_nc)
-                    if tipo_nc.startswith("Sem") and novo_mot_nc not in SEM:
-                        SEM.append(novo_mot_nc)
-                    st.session_state["nc_show_cad_mot"] = False
-                    st.session_state["nc_mot_pre"] = novo_mot_nc
-                    st.success(f"✅ **{novo_mot_nc}** cadastrado!")
-                    st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-
     MOTORISTAS = sorted(set(_MOTORISTAS_BASE + st.session_state.motoristas_extra))
 
     with st.form("fnovo", clear_on_submit=True):
