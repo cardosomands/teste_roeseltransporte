@@ -887,38 +887,57 @@ elif aba == "novo":
             with col_b:
                 st.markdown("""
                 <style>
-                div[data-testid="stButton"] button[kind="primary"]:not([data-baseweb]) {
-                    background: linear-gradient(135deg,#1A3A5C 0%,#2D6BE4 100%) !important;
-                    box-shadow: 0 4px 16px rgba(45,107,228,0.35) !important;
-                }
-                .btn-ia > div > button {
+                /* Alvo pelo key do botão IA */
+                [data-testid="stButton"]:has(button p) button {
                     background: white !important;
                     color: #1C1C2E !important;
-                    border: 2px solid #DC2626 !important;
+                    border: 2.5px solid #DC2626 !important;
                     border-radius: 10px !important;
                     font-weight: 800 !important;
                     font-size: 15px !important;
-                    letter-spacing: 0.04em !important;
+                    letter-spacing: 0.03em !important;
                     padding: 13px 16px !important;
-                    box-shadow: 0 2px 8px rgba(220,38,38,0.15) !important;
+                    box-shadow: 0 2px 10px rgba(220,38,38,0.18) !important;
                     transition: all 0.18s !important;
                 }
-                .btn-ia > div > button:hover {
-                    background: #FFF5F5 !important;
-                    transform: translateY(-1px) !important;
-                    box-shadow: 0 6px 18px rgba(220,38,38,0.25) !important;
+                /* Seletor específico do botão IA pelo key */
+                div[data-testid="stButton"] > button#btn_ia_key,
+                .stButton-ia button {
+                    background: white !important;
+                    color: #1C1C2E !important;
+                    border: 2.5px solid #DC2626 !important;
                 }
                 </style>
                 <br>
-                <div style='background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:14px 16px;margin-bottom:12px;'>
-                    <div style='font-size:12px;font-weight:800;color:#1E3A8A;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px'>✨ Leitura automática</div>
-                    <div style='font-size:13px;color:#1D4ED8;font-weight:600;line-height:1.4'>A IA extrai os dados do contrato em segundos.</div>
+                <div style='background:#FFF5F5;border:1.5px solid #FECACA;border-radius:12px;padding:14px 16px;margin-bottom:12px;'>
+                    <div style='font-size:12px;font-weight:800;color:#991B1B;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px'>✨ Leitura automática</div>
+                    <div style='font-size:13px;color:#B91C1C;font-weight:600;line-height:1.4'>A IA extrai os dados do contrato em segundos.</div>
                 </div>
                 """, unsafe_allow_html=True)
-                with st.container():
-                    st.markdown('<div class="btn-ia">', unsafe_allow_html=True)
-                    btn_ia = st.button("🤖  Analisar com IA", use_container_width=True, disabled=not ANTHROPIC_KEY)
-                    st.markdown('</div>', unsafe_allow_html=True)
+                btn_ia = st.button("🤖  Analisar com IA", use_container_width=True, disabled=not ANTHROPIC_KEY, key="btn_ia_upload",
+                    help="Clique para analisar o contrato com inteligência artificial")
+                st.markdown("""
+                <style>
+                /* Override do botão IA — branco com borda vermelha */
+                button[data-testid="baseButton-secondary"][kind="secondary"] { }
+                div:has(> div > button[data-testid="baseButton-secondary"]) + * { }
+                /* Força via atributo aria-label ou texto */
+                .stButton button[title="Clique para analisar o contrato com inteligência artificial"] {
+                    background: white !important;
+                    color: #111827 !important;
+                    border: 2.5px solid #DC2626 !important;
+                    border-radius: 10px !important;
+                    font-size: 15px !important;
+                    font-weight: 800 !important;
+                    box-shadow: 0 2px 10px rgba(220,38,38,0.2) !important;
+                }
+                .stButton button[title="Clique para analisar o contrato com inteligência artificial"]:hover {
+                    background: #FEF2F2 !important;
+                    box-shadow: 0 5px 16px rgba(220,38,38,0.3) !important;
+                    transform: translateY(-1px) !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
                 if btn_ia:
                     arquivo = upl.read()
                     if len(arquivo) > 5 * 1024 * 1024:
