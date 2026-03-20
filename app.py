@@ -1004,17 +1004,47 @@ elif aba == "contratos":
     st.markdown("<br>", unsafe_allow_html=True)
 
     if not dv.empty:
-        if perm == "total":
-            labels = ["— Selecione um contrato para editar —"] + [f"{r['motorista']} — {r['contrato']} — {fd(str(r['data'])[:10])}" for _, r in dv.iterrows()]
-            sel = st.selectbox("Contrato", labels, key="sel_contrato_edit")
-        else:
-            sel = "— Selecione um contrato para editar —"
+        cols = [c for c in ["motorista","cliente","contrato","data","fat_bruto","chapa","destino","status"] if c in dv.columns]
+        ds = dv[cols].copy()
+        ds["data"] = ds["data"].dt.strftime("%d/%m/%Y")
+        ds["fat_bruto"] = ds["fat_bruto"].apply(R)
+        ds["chapa"] = ds["chapa"].apply(R)
+        ds.columns = ["MOTORISTA","CLIENTE","CONTRATO","DATA","FAT. BRUTO","CHAPA","DESTINO","STATUS"][:len(cols)]
 
-        # Se um contrato está selecionado, mostra o form de edição
-        if sel != "— Selecione um contrato para editar —" and perm == "total":
-            row = dv.iloc[labels.index(sel) - 1]
-            st.markdown(f"<div style='background:white;border:1px solid #E5E7EB;border-radius:12px;padding:24px;margin-top:12px'>", unsafe_allow_html=True)
-            st.markdown(f"**Editando: {row.get('contrato','')} — {row.get('motorista','')}**")
+        if perm == "total":
+            sel_result = st.dataframe(
+                ds, use_container_width=True, hide_index=True,
+                on_select="rerun", selection_mode="single-row",
+                column_config={
+                    "MOTORISTA": st.column_config.TextColumn(width="medium"),
+                    "FAT. BRUTO": st.column_config.TextColumn(width="medium"),
+                    "STATUS": st.column_config.TextColumn(width="small"),
+                })
+            sel_rows = sel_result.selection.rows if sel_result else []
+        else:
+            st.dataframe(ds, use_container_width=True, hide_index=True)
+            sel_rows = []
+
+        col_e1, col_e2 = st.columns(2)
+        with col_e1:
+            csv = dv.to_csv(index=False, sep=";", encoding="utf-8-sig")
+            st.download_button("📥 Exportar CSV", csv,
+                f"contratos_{periodo.replace('/','_')}.csv", "text/csv",
+                use_container_width=True)
+        with col_e2:
+            try:
+                excel_buf = gerar_excel(dv, f"Contratos {periodo}")
+                st.download_button("Exportar relatório (.xlsx)", excel_buf,
+                    f"contratos_{periodo.replace('/','_')}.xlsx",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True)
+            except Exception as ex:
+                st.caption(f"Excel indisponível: {ex}")
+
+        if sel_rows and perm == "total":
+            row = dv.iloc[sel_rows[0]]
+            st.markdown("---")
+            st.markdown(f"**✏️ Editando: {row.get('contrato','')} — {row.get('motorista','')}**")
             with st.form("fedit"):
                 st.markdown("**Dados do Contrato**")
                 ea1, ea2, ea3 = st.columns(3)
@@ -1024,7 +1054,6 @@ elif aba == "contratos":
                 ec = ea2.selectbox("Cliente", CLIENTES,
                     index=CLIENTES.index(row.get("cliente","")) if row.get("cliente","") in CLIENTES else 0)
                 ep = ea3.text_input("Placa", value=row.get("placa","") or "")
-
                 eb1, eb2, eb3 = st.columns(3)
                 econt  = eb1.text_input("Nº Contrato", value=str(row.get("contrato","") or ""))
                 efrota = eb2.text_input("Frota", value=str(row.get("frota","") or ""))
@@ -1033,13 +1062,11 @@ elif aba == "contratos":
                 except:
                     edata_def = datetime.now().date()
                 edata = eb3.date_input("Data", value=edata_def)
-
                 st.markdown("**Valores**")
                 ec1, ec2, ec3 = st.columns(3)
                 efat   = ec1.number_input("Fat. Bruto (R$)", value=float(row.get("fat_bruto",0) or 0), step=100.0, format="%.2f")
                 echapa = ec2.number_input("Chapa (R$)", value=float(row.get("chapa",0) or 0), step=50.0, format="%.2f")
                 eqtd   = ec3.number_input("Qtd Veículos", value=int(row.get("qtd_veiculos",0) or 0), step=1)
-
                 st.markdown("**Informações Adicionais**")
                 ed1, ed2 = st.columns(2)
                 edest = ed1.text_input("Destino", value=str(row.get("destino","") or "")).upper()
@@ -1053,7 +1080,6 @@ elif aba == "contratos":
                 edtpag  = ee1.date_input("Dt. Pagamento", value=dtpag_def)
                 ea_pago = ee2.checkbox("Adiantamento Pago?", value=bool(row.get("adiantamento_pago")))
                 eobs = st.text_area("Observação", value=str(row.get("obs","") or ""))
-
                 sc1, sc2 = st.columns(2)
                 if sc1.form_submit_button("💾 Salvar alterações", use_container_width=True):
                     payload = {
@@ -1071,40 +1097,6 @@ elif aba == "contratos":
                 if sc2.form_submit_button("🗑️ Excluir contrato", use_container_width=True):
                     if sb_delete("contratos", f"id=eq.{row['id']}"):
                         st.success("Excluído!"); st.cache_data.clear(); st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        else:
-            # Mostra tabela normal
-            cols = [c for c in ["motorista","cliente","contrato","data","fat_bruto","chapa","destino","status","adiantamento_pago"] if c in dv.columns]
-            ds = dv[cols].copy()
-            ds["data"] = ds["data"].dt.strftime("%d/%m/%Y")
-            ds["fat_bruto"] = ds["fat_bruto"].apply(R)
-            ds["chapa"] = ds["chapa"].apply(R)
-            ds["adiantamento_pago"] = ds["adiantamento_pago"].apply(lambda x: "✅" if x else "❌")
-            ds.columns = ["MOTORISTA","CLIENTE","CONTRATO","DATA","FAT. BRUTO","CHAPA","DESTINO","STATUS","ADIANT."][:len(cols)]
-            st.dataframe(ds, use_container_width=True, hide_index=True,
-                column_config={
-                    "MOTORISTA": st.column_config.TextColumn(width="medium"),
-                    "FAT. BRUTO": st.column_config.TextColumn(width="medium"),
-                    "STATUS": st.column_config.TextColumn(width="small"),
-                    "ADIANT.": st.column_config.TextColumn(width="small"),
-                })
-
-            col_e1, col_e2 = st.columns(2)
-            with col_e1:
-                csv = dv.to_csv(index=False, sep=";", encoding="utf-8-sig")
-                st.download_button("📥 Exportar CSV", csv,
-                    f"contratos_{periodo.replace('/','_')}.csv", "text/csv",
-                    use_container_width=True)
-            with col_e2:
-                try:
-                    excel_buf = gerar_excel(dv, f"Contratos {periodo}")
-                    st.download_button("Exportar relatório (.xlsx)", excel_buf,
-                        f"contratos_{periodo.replace('/','_')}.xlsx",
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        use_container_width=True)
-                except Exception as ex:
-                    st.caption(f"Excel indisponível: {ex}")
     else:
         st.info("Nenhum contrato encontrado.")
 
