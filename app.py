@@ -342,6 +342,22 @@ hr { border-color: #E2E8F0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
+# ── Injeta a logo real como marca d'água no fundo ─────────────────
+st.markdown(f"""
+<style>
+.stApp {{
+    background-image: url("data:image/jpeg;base64,{LOGO_B64}") !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: 420px auto !important;
+    background-attachment: fixed !important;
+}}
+.stApp::before {{
+    background-color: rgba(240,242,246,0.93) !important;
+}}
+</style>
+""", unsafe_allow_html=True)
+
 # ── SUPABASE ───────────────────────────────────────────────────────
 SUPABASE_URL = "https://lmcefcmjatnixrsggyvz.supabase.co"
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
