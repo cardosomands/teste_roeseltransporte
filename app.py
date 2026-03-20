@@ -1062,10 +1062,13 @@ elif aba == "motorista":
 
     # Filtrar dados pelo período e motorista
     df_m = df_all.copy()
-    if not df_all.empty:
+    if not df_all.empty and "data" in df_all.columns:
         if ano_m: df_m = df_m[df_m["data"].dt.year == ano_m]
         if mes_m: df_m = df_m[df_m["data"].dt.month == mes_m]
-    dm = df_m[df_m["motorista"] == mot]
+    if not df_m.empty and "motorista" in df_m.columns:
+        dm = df_m[df_m["motorista"] == mot]
+    else:
+        dm = pd.DataFrame()
 
     periodo_m = f"{MESES[mes_m-1]}/{ano_m}" if mes_m and ano_m else \
                 (MESES[mes_m-1] if mes_m else (str(ano_m) if ano_m else "Todos os períodos"))
