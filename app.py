@@ -874,7 +874,7 @@ if aba == "dashboard":
 # NOVO CONTRATO
 # ══════════════════════════════════════════════════════════════════
 elif aba == "novo":
-    if perm != "total":
+    if perm not in ("total", "demo"):
         st.warning("Sem permissão para cadastrar contratos.")
         st.stop()
 
