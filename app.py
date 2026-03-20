@@ -317,6 +317,13 @@ p, .stCaption { color: #6B7280 !important; }
 [data-testid="collapsedControl"] { display: none !important; }
 [data-testid="stSidebarHeader"] { display: none !important; }
 section[data-testid="stSidebar"] > div:first-child > div:first-child { padding-top: 0 !important; }
+
+/* Esconder ícone _arrow_right dos expanders */
+[data-testid="stExpander"] summary span[data-testid="stExpanderToggleIcon"],
+[data-testid="stExpander"] summary svg,
+details summary svg { display: none !important; }
+details summary::marker { display: none !important; content: "" !important; }
+details summary { list-style: none !important; }
 hr { border-color: #E2E8F0 !important; }
 
 /* Conteúdo principal */
