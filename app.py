@@ -1025,25 +1025,8 @@ elif aba == "contratos":
             st.dataframe(ds, use_container_width=True, hide_index=True)
             sel_rows = []
 
-        col_e1, col_e2 = st.columns(2)
-        with col_e1:
-            csv = dv.to_csv(index=False, sep=";", encoding="utf-8-sig")
-            st.download_button("📥 Exportar CSV", csv,
-                f"contratos_{periodo.replace('/','_')}.csv", "text/csv",
-                use_container_width=True)
-        with col_e2:
-            try:
-                excel_buf = gerar_excel(dv, f"Contratos {periodo}")
-                st.download_button("Exportar relatório (.xlsx)", excel_buf,
-                    f"contratos_{periodo.replace('/','_')}.xlsx",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True)
-            except Exception as ex:
-                st.caption(f"Excel indisponível: {ex}")
-
         if sel_rows and perm == "total":
             row = dv.iloc[sel_rows[0]]
-            st.markdown("---")
             st.markdown(f"**✏️ Editando: {row.get('contrato','')} — {row.get('motorista','')}**")
             with st.form("fedit"):
                 st.markdown("**Dados do Contrato**")
@@ -1080,8 +1063,12 @@ elif aba == "contratos":
                 edtpag  = ee1.date_input("Dt. Pagamento", value=dtpag_def)
                 ea_pago = ee2.checkbox("Adiantamento Pago?", value=bool(row.get("adiantamento_pago")))
                 eobs = st.text_area("Observação", value=str(row.get("obs","") or ""))
-                sc1, sc2 = st.columns(2)
-                if sc1.form_submit_button("💾 Salvar alterações", use_container_width=True):
+                st.markdown("<br>", unsafe_allow_html=True)
+                sc1, sc2, sc3 = st.columns(3)
+                csv_row = dv.iloc[[sel_rows[0]]].to_csv(index=False, sep=";", encoding="utf-8-sig")
+                sc1.download_button("📥 Exportar CSV", csv_row,
+                    f"contrato_{row.get('contrato','')}.csv", "text/csv", use_container_width=True)
+                if sc2.form_submit_button("💾 Salvar alterações", use_container_width=True):
                     payload = {
                         "motorista": em, "cliente": ec, "placa": ep,
                         "contrato": econt, "frota": efrota, "data": str(edata),
@@ -1094,9 +1081,14 @@ elif aba == "contratos":
                         st.success("✅ Contrato atualizado!")
                         st.cache_data.clear()
                         st.rerun()
-                if sc2.form_submit_button("🗑️ Excluir contrato", use_container_width=True):
+                if sc3.form_submit_button("🗑️ Excluir contrato", use_container_width=True):
                     if sb_delete("contratos", f"id=eq.{row['id']}"):
                         st.success("Excluído!"); st.cache_data.clear(); st.rerun()
+        else:
+            csv = dv.to_csv(index=False, sep=";", encoding="utf-8-sig")
+            st.download_button("📥 Exportar CSV", csv,
+                f"contratos_{periodo.replace('/','_')}.csv", "text/csv",
+                use_container_width=True)
     else:
         st.info("Nenhum contrato encontrado.")
 
