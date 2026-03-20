@@ -860,48 +860,28 @@ elif aba == "novo":
 
     st.markdown("<h1 style='color:#111318;font-size:22px;font-weight:700;margin-bottom:2px'>Novo Contrato</h1><p style='color:#9CA3AF;font-size:13px;margin-top:0'>Cadastre um novo contrato de transporte</p>", unsafe_allow_html=True)
 
-    # CSS escuro só para o expander da IA
+    # CSS escuro para o expander da IA
     st.markdown("""
     <style>
     [data-testid="stExpander"]:first-of-type > div:first-child {
-        background: #1A3A5C !important;
-        border: 1px solid #2A5A8C !important;
-        border-radius: 10px !important;
+        background: #1A3A5C !important; border: 1px solid #2A5A8C !important; border-radius: 10px !important;
     }
     [data-testid="stExpander"]:first-of-type > div:first-child p,
     [data-testid="stExpander"]:first-of-type > div:first-child span,
-    [data-testid="stExpander"]:first-of-type > div:first-child svg {
-        color: white !important;
-        fill: white !important;
-    }
+    [data-testid="stExpander"]:first-of-type > div:first-child svg { color: white !important; fill: white !important; }
     [data-testid="stExpander"]:first-of-type > div:last-child {
-        background: #0F2540 !important;
-        border: 1px solid #2A5A8C !important;
-        border-top: none !important;
-        border-radius: 0 0 10px 10px !important;
-        padding: 20px !important;
+        background: #0F2540 !important; border: 1px solid #2A5A8C !important;
+        border-top: none !important; border-radius: 0 0 10px 10px !important; padding: 20px !important;
     }
     [data-testid="stExpander"]:first-of-type > div:last-child p,
     [data-testid="stExpander"]:first-of-type > div:last-child label,
-    [data-testid="stExpander"]:first-of-type > div:last-child span:not([class*="badge"]) {
-        color: #B8CDE0 !important;
-    }
+    [data-testid="stExpander"]:first-of-type > div:last-child span:not([class*="badge"]) { color: #B8CDE0 !important; }
     [data-testid="stExpander"]:first-of-type input,
     [data-testid="stExpander"]:first-of-type textarea,
     [data-testid="stExpander"]:first-of-type [data-baseweb="select"] > div {
-        background: #1E4976 !important;
-        border-color: #2A5A8C !important;
-        color: white !important;
+        background: #1E4976 !important; border-color: #2A5A8C !important; color: white !important;
     }
-    [data-testid="stExpander"]:first-of-type .stButton > button {
-        background: #1A7FC1 !important;
-        color: white !important;
-    }
-    [data-testid="stExpander"]:first-of-type [data-testid="stAlert"] {
-        background: rgba(255,255,255,0.08) !important;
-        border-color: rgba(255,255,255,0.2) !important;
-        color: #B8CDE0 !important;
-    }
+    [data-testid="stExpander"]:first-of-type .stButton > button { background: #1A7FC1 !important; color: white !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -919,59 +899,9 @@ elif aba == "novo":
                 else:
                     st.info(f"📄 **{upl.name}** — PDF pronto para análise")
             with col_b:
-                st.markdown("""
-                <style>
-                /* Alvo pelo key do botão IA */
-                [data-testid="stButton"]:has(button p) button {
-                    background: white !important;
-                    color: #1C1C2E !important;
-                    border: 2.5px solid #DC2626 !important;
-                    border-radius: 10px !important;
-                    font-weight: 800 !important;
-                    font-size: 15px !important;
-                    letter-spacing: 0.03em !important;
-                    padding: 13px 16px !important;
-                    box-shadow: 0 2px 10px rgba(220,38,38,0.18) !important;
-                    transition: all 0.18s !important;
-                }
-                /* Seletor específico do botão IA pelo key */
-                div[data-testid="stButton"] > button#btn_ia_key,
-                .stButton-ia button {
-                    background: white !important;
-                    color: #1C1C2E !important;
-                    border: 2.5px solid #DC2626 !important;
-                }
-                </style>
-                <br>
-                <div style='background:#FFF5F5;border:1.5px solid #FECACA;border-radius:12px;padding:14px 16px;margin-bottom:12px;'>
-                    <div style='font-size:12px;font-weight:800;color:#991B1B;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px'>✨ Leitura automática</div>
-                    <div style='font-size:13px;color:#B91C1C;font-weight:600;line-height:1.4'>A IA extrai os dados do contrato em segundos.</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
                 btn_ia = st.button("🤖  Analisar com IA", use_container_width=True, disabled=not ANTHROPIC_KEY, key="btn_ia_upload",
                     help="Clique para analisar o contrato com inteligência artificial")
-                st.markdown("""
-                <style>
-                /* Override do botão IA — branco com borda vermelha */
-                button[data-testid="baseButton-secondary"][kind="secondary"] { }
-                div:has(> div > button[data-testid="baseButton-secondary"]) + * { }
-                /* Força via atributo aria-label ou texto */
-                .stButton button[title="Clique para analisar o contrato com inteligência artificial"] {
-                    background: white !important;
-                    color: #111827 !important;
-                    border: 2.5px solid #DC2626 !important;
-                    border-radius: 10px !important;
-                    font-size: 15px !important;
-                    font-weight: 800 !important;
-                    box-shadow: 0 2px 10px rgba(220,38,38,0.2) !important;
-                }
-                .stButton button[title="Clique para analisar o contrato com inteligência artificial"]:hover {
-                    background: #FEF2F2 !important;
-                    box-shadow: 0 5px 16px rgba(220,38,38,0.3) !important;
-                    transform: translateY(-1px) !important;
-                }
-                </style>
-                """, unsafe_allow_html=True)
                 if btn_ia:
                     arquivo = upl.read()
                     if len(arquivo) > 5 * 1024 * 1024:
@@ -996,9 +926,7 @@ elif aba == "novo":
         st.markdown("**Dados do Contrato**")
         c1,c2,c3 = st.columns(3)
 
-        mi = MOTORISTAS.index(st.session_state.get("nc_mot_pre", MOTORISTAS[0])) \
-             if st.session_state.get("nc_mot_pre","") in MOTORISTAS else \
-             (MOTORISTAS.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS else 0)
+        mi = MOTORISTAS.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS else 0
         mot_final = c1.selectbox("Motorista *", MOTORISTAS, index=mi)
 
         ci = CLIENTES.index(ia.get("cliente","")) if ia.get("cliente","") in CLIENTES else 0
