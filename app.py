@@ -1064,11 +1064,8 @@ elif aba == "contratos":
                 ea_pago = ee2.checkbox("Adiantamento Pago?", value=bool(row.get("adiantamento_pago")))
                 eobs = st.text_area("Observação", value=str(row.get("obs","") or ""))
                 st.markdown("<br>", unsafe_allow_html=True)
-                sc1, sc2, sc3 = st.columns(3)
-                csv_row = dv.iloc[[sel_rows[0]]].to_csv(index=False, sep=";", encoding="utf-8-sig")
-                sc1.download_button("📥 Exportar CSV", csv_row,
-                    f"contrato_{row.get('contrato','')}.csv", "text/csv", use_container_width=True)
-                if sc2.form_submit_button("💾 Salvar alterações", use_container_width=True):
+                sc1, sc2 = st.columns(2)
+                if sc1.form_submit_button("💾 Salvar alterações", use_container_width=True):
                     payload = {
                         "motorista": em, "cliente": ec, "placa": ep,
                         "contrato": econt, "frota": efrota, "data": str(edata),
@@ -1081,9 +1078,13 @@ elif aba == "contratos":
                         st.success("✅ Contrato atualizado!")
                         st.cache_data.clear()
                         st.rerun()
-                if sc3.form_submit_button("🗑️ Excluir contrato", use_container_width=True):
+                if sc2.form_submit_button("🗑️ Excluir contrato", use_container_width=True):
                     if sb_delete("contratos", f"id=eq.{row['id']}"):
                         st.success("Excluído!"); st.cache_data.clear(); st.rerun()
+            # CSV fora do form
+            csv_row = dv.iloc[[sel_rows[0]]].to_csv(index=False, sep=";", encoding="utf-8-sig")
+            st.download_button("📥 Exportar CSV deste contrato", csv_row,
+                f"contrato_{row.get('contrato','')}.csv", "text/csv", use_container_width=True)
         else:
             csv = dv.to_csv(index=False, sep=";", encoding="utf-8-sig")
             st.download_button("📥 Exportar CSV", csv,
