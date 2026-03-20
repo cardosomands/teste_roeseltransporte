@@ -965,10 +965,16 @@ elif aba == "contratos":
     df, periodo = sel_periodo("cont")
     st.markdown(f"<p style='color:#8896A7;margin-top:-8px'>{periodo}</p>", unsafe_allow_html=True)
 
-    c1,c2,c3 = st.columns(3)
-    busca = c1.text_input("🔍 Buscar", "", placeholder="Motorista, nº contrato, destino…")
-    fs = c2.selectbox("Filtrar por Status", ["Todos"] + STATUS)
-    fc = c3.selectbox("Filtrar por Cliente", ["Todos"] + CLIENTES)
+    if perm == "total":
+        sc1, sc2, sc3, sc4 = st.columns([2, 1, 1, 2])
+        busca = sc1.text_input("🔍 Buscar", "", placeholder="Motorista, nº contrato, destino…")
+        fs = sc2.selectbox("Status", ["Todos"] + STATUS)
+        fc = sc3.selectbox("Cliente", ["Todos"] + CLIENTES)
+    else:
+        c1,c2,c3 = st.columns(3)
+        busca = c1.text_input("🔍 Buscar", "", placeholder="Motorista, nº contrato, destino…")
+        fs = c2.selectbox("Filtrar por Status", ["Todos"] + STATUS)
+        fc = c3.selectbox("Filtrar por Cliente", ["Todos"] + CLIENTES)
 
     dv = df.copy()
     if not dv.empty:
@@ -999,13 +1005,13 @@ elif aba == "contratos":
 
     if not dv.empty:
         if perm == "total":
-            labels = ["— Ver todos —"] + [f"{r['motorista']} — {r['contrato']} — {fd(str(r['data'])[:10])}" for _, r in dv.iterrows()]
-            sel = st.selectbox("Selecionar contrato para editar", labels, key="sel_contrato_edit")
+            labels = ["— Selecione um contrato para editar —"] + [f"{r['motorista']} — {r['contrato']} — {fd(str(r['data'])[:10])}" for _, r in dv.iterrows()]
+            sel = st.selectbox("Contrato", labels, key="sel_contrato_edit")
         else:
-            sel = "— Ver todos —"
+            sel = "— Selecione um contrato para editar —"
 
         # Se um contrato está selecionado, mostra o form de edição
-        if sel != "— Ver todos —" and perm == "total":
+        if sel != "— Selecione um contrato para editar —" and perm == "total":
             row = dv.iloc[labels.index(sel) - 1]
             st.markdown(f"<div style='background:white;border:1px solid #E5E7EB;border-radius:12px;padding:24px;margin-top:12px'>", unsafe_allow_html=True)
             st.markdown(f"**Editando: {row.get('contrato','')} — {row.get('motorista','')}**")
