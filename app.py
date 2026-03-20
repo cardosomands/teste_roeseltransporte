@@ -892,21 +892,21 @@ elif aba == "novo":
                     box-shadow: 0 4px 16px rgba(45,107,228,0.35) !important;
                 }
                 .btn-ia > div > button {
-                    background: linear-gradient(135deg,#1A3A5C 0%,#2D6BE4 100%) !important;
-                    color: white !important;
-                    border: none !important;
+                    background: white !important;
+                    color: #1C1C2E !important;
+                    border: 2px solid #DC2626 !important;
                     border-radius: 10px !important;
                     font-weight: 800 !important;
                     font-size: 15px !important;
                     letter-spacing: 0.04em !important;
                     padding: 13px 16px !important;
-                    box-shadow: 0 4px 16px rgba(45,107,228,0.35) !important;
+                    box-shadow: 0 2px 8px rgba(220,38,38,0.15) !important;
                     transition: all 0.18s !important;
-                    text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
                 }
                 .btn-ia > div > button:hover {
+                    background: #FFF5F5 !important;
                     transform: translateY(-1px) !important;
-                    box-shadow: 0 7px 22px rgba(45,107,228,0.48) !important;
+                    box-shadow: 0 6px 18px rgba(220,38,38,0.25) !important;
                 }
                 </style>
                 <br>
