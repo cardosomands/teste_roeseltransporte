@@ -1168,55 +1168,13 @@ elif aba == "contratos":
 elif aba == "motorista":
     st.markdown("<h1 style='color:#111318'>Motorista</h1>", unsafe_allow_html=True)
 
-    # ── Cadastrar novo motorista ───────────────────────────────────
-    with st.expander("Cadastrar novo motorista", expanded=False):
-        col_nm1, col_nm2 = st.columns([3, 1])
-        with col_nm1:
-            novo_mot = st.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA",
-                                     key="novo_motorista_input").strip().upper()
-        with col_nm2:
-            tipo_mot = st.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"],
-                                    key="novo_motorista_tipo")
-        col_btn1, col_btn2 = st.columns([2, 3])
-        with col_btn1:
-            if st.button("Cadastrar", use_container_width=True, key="btn_cadastrar_mot"):
-                if not novo_mot:
-                    st.error("Digite o nome do motorista.")
-                elif novo_mot in MOTORISTAS:
-                    st.warning(f"'{novo_mot}' já está cadastrado.")
-                else:
-                    st.session_state.motoristas_extra.append(novo_mot)
-                    if tipo_mot.startswith("Sem"):
-                        if novo_mot not in SEM:
-                            SEM.append(novo_mot)
-                    st.success(f"✅ Motorista **{novo_mot}** cadastrado com sucesso!")
-                    st.rerun()
-        # Lista dos motoristas cadastrados na sessão
-        if st.session_state.motoristas_extra:
-            st.markdown("**Adicionados nesta sessão:**")
-            for m in st.session_state.motoristas_extra:
-                c1e, c2e = st.columns([4, 1])
-                c1e.markdown(f"• {m}")
-                if c2e.button("🗑️", key=f"del_mot_{m}", help=f"Remover {m}"):
-                    st.session_state.motoristas_extra.remove(m)
-                    if m in SEM: SEM.remove(m)
-                    st.rerun()
-        # Todos os motoristas ativos
-        with st.expander("📋 Ver todos os motoristas", expanded=False):
-            cols_list = st.columns(3)
-            for i, m in enumerate(MOTORISTAS):
-                cols_list[i % 3].markdown(f"• {m}")
-
-    st.markdown("---")
-
-    # Anos até 2030 + anos existentes no banco
     anos_banco_m = set(df_all["data"].dt.year.dropna().unique().astype(int).tolist()) if not df_all.empty else set()
     anos_list_m = [0] + sorted(anos_banco_m | set(range(2024, 2031)), reverse=True)
 
     # Filtros na mesma linha: Motorista | Ano | Mês
     cf1, cf2, cf3 = st.columns([2, 1, 1])
     with cf1:
-        MOTORISTAS_M_OPT = MOTORISTAS + ["➕ Adicionar novo motorista..."]
+        MOTORISTAS_M_OPT = MOTORISTAS + ["➕ Cadastrar motorista..."]
         mot_m_sel = st.selectbox("Motorista", MOTORISTAS_M_OPT, key="mot_nome")
     with cf2:
         ano_m = st.selectbox("Ano", anos_list_m,
@@ -1229,7 +1187,7 @@ elif aba == "motorista":
             format_func=lambda x: "Todos" if x == 0 else MESES[x - 1],
             key="mot_mes")
 
-    if mot_m_sel == "➕ Adicionar novo motorista...":
+    if mot_m_sel == "➕ Cadastrar motorista...":
         with st.container():
             am1, am2, am3 = st.columns([3, 2, 1])
             novo_mot_m = am1.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA", key="aba_mot_novo_nome").strip().upper()
