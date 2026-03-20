@@ -994,7 +994,7 @@ elif aba == "novo":
     MOTORISTAS = sorted(set(_MOTORISTAS_BASE + st.session_state.motoristas_extra))
 
     # ── Botão cadastrar motorista acima do form ────────────────────
-    if st.button("➕ Cadastrar motorista", key="nc_btn_toggle_cad"):
+    if st.button("Cadastrar motorista", key="nc_btn_toggle_cad"):
         st.session_state["nc_show_cad_mot"] = not st.session_state.get("nc_show_cad_mot", False)
 
     if st.session_state.get("nc_show_cad_mot", False):
@@ -1004,7 +1004,7 @@ elif aba == "novo":
             nc1, nc2 = st.columns([3, 2])
             novo_mot_nc = nc1.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA", key="nc_novo_mot_nome").strip().upper()
             tipo_nc = nc2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="nc_novo_mot_tipo")
-            if st.button("✅ Salvar motorista", key="nc_btn_salvar_mot"):
+            if st.button("Salvar motorista", key="nc_btn_salvar_mot"):
                 if not novo_mot_nc:
                     st.error("Digite o nome do motorista.")
                 elif novo_mot_nc in MOTORISTAS:
@@ -1179,10 +1179,7 @@ elif aba == "contratos":
 # POR MOTORISTA
 # ══════════════════════════════════════════════════════════════════
 elif aba == "motorista":
-    h1col, btncol = st.columns([5, 1])
-    h1col.markdown("<h1 style='color:#111318'>Motorista</h1>", unsafe_allow_html=True)
-    btncol.markdown("<br>", unsafe_allow_html=True)
-    if btncol.button("➕ Cadastrar motorista", use_container_width=True):
+    if st.button("Cadastrar motorista", key="btn_toggle_cad_mot"):
         st.session_state["show_cad_mot"] = not st.session_state.get("show_cad_mot", False)
 
     if st.session_state.get("show_cad_mot", False):
@@ -1192,7 +1189,7 @@ elif aba == "motorista":
             am1, am2 = st.columns([3, 2])
             novo_mot_m = am1.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA", key="aba_mot_novo_nome").strip().upper()
             tipo_mot_m = am2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="aba_mot_novo_tipo")
-            if st.button("✅ Salvar motorista", key="aba_mot_btn_add"):
+            if st.button("Salvar motorista", key="aba_mot_btn_add"):
                 if not novo_mot_m:
                     st.error("Digite o nome do motorista.")
                 elif novo_mot_m in MOTORISTAS:
