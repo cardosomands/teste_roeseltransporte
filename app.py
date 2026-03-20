@@ -1038,15 +1038,58 @@ elif aba == "contratos":
             row = dv.iloc[labels.index(sel)]
             with st.expander("✏️ Editar contrato"):
                 with st.form("fedit"):
-                    ec1,ec2 = st.columns(2)
-                    es = ec1.selectbox("Status", STATUS,
+                    st.markdown("**Dados do Contrato**")
+                    ea1, ea2, ea3 = st.columns(3)
+                    MOTORISTAS_E = sorted(set(_MOTORISTAS_BASE + st.session_state.motoristas_extra))
+                    em = ea1.selectbox("Motorista", MOTORISTAS_E,
+                        index=MOTORISTAS_E.index(row.get("motorista","")) if row.get("motorista","") in MOTORISTAS_E else 0)
+                    ec = ea2.selectbox("Cliente", CLIENTES,
+                        index=CLIENTES.index(row.get("cliente","")) if row.get("cliente","") in CLIENTES else 0)
+                    ep = ea3.text_input("Placa", value=row.get("placa","") or "")
+
+                    eb1, eb2, eb3 = st.columns(3)
+                    econt = eb1.text_input("Nº Contrato", value=str(row.get("contrato","") or ""))
+                    efrota = eb2.text_input("Frota", value=str(row.get("frota","") or ""))
+                    try:
+                        edata_def = pd.to_datetime(str(row["data"])[:10]).date()
+                    except:
+                        edata_def = datetime.now().date()
+                    edata = eb3.date_input("Data", value=edata_def)
+
+                    st.markdown("**Valores**")
+                    ec1, ec2, ec3 = st.columns(3)
+                    efat   = ec1.number_input("Fat. Bruto (R$)", value=float(row.get("fat_bruto",0) or 0), step=100.0, format="%.2f")
+                    echapa = ec2.number_input("Chapa (R$)", value=float(row.get("chapa",0) or 0), step=50.0, format="%.2f")
+                    eqtd   = ec3.number_input("Qtd Veículos", value=int(row.get("qtd_veiculos",0) or 0), step=1)
+
+                    st.markdown("**Informações Adicionais**")
+                    ed1, ed2 = st.columns(2)
+                    edest = ed1.text_input("Destino", value=str(row.get("destino","") or "")).upper()
+                    es    = ed2.selectbox("Status", STATUS,
                         index=STATUS.index(row.get("status","ABERTO")) if row.get("status") in STATUS else 0)
-                    ea = ec2.checkbox("Adiantamento Pago?", value=bool(row.get("adiantamento_pago")))
-                    eo = st.text_area("Obs", value=row.get("obs","") or "")
-                    if st.form_submit_button("Salvar"):
-                        if sb_patch("contratos", f"id=eq.{row['id']}", {"status": es, "adiantamento_pago": ea, "obs": eo}):
-                            st.success("✅ Salvo!"); st.cache_data.clear(); st.rerun()
-            if st.button(f"Excluir {row['contrato']}", type="secondary"):
+                    ee1, ee2 = st.columns(2)
+                    try:
+                        dtpag_def = pd.to_datetime(str(row.get("dt_pagamento",""))[:10]).date() if row.get("dt_pagamento") else None
+                    except:
+                        dtpag_def = None
+                    edtpag = ee1.date_input("Dt. Pagamento", value=dtpag_def)
+                    ea_pago = ee2.checkbox("Adiantamento Pago?", value=bool(row.get("adiantamento_pago")))
+                    eobs = st.text_area("Observação", value=str(row.get("obs","") or ""))
+
+                    if st.form_submit_button("Salvar alterações", use_container_width=True):
+                        payload = {
+                            "motorista": em, "cliente": ec, "placa": ep,
+                            "contrato": econt, "frota": efrota, "data": str(edata),
+                            "fat_bruto": efat, "chapa": echapa, "qtd_veiculos": int(eqtd),
+                            "destino": edest, "status": es,
+                            "dt_pagamento": str(edtpag) if edtpag else None,
+                            "adiantamento_pago": ea_pago, "obs": eobs
+                        }
+                        if sb_patch("contratos", f"id=eq.{row['id']}", payload):
+                            st.success("✅ Contrato atualizado!")
+                            st.cache_data.clear()
+                            st.rerun()
+            if st.button(f"🗑️ Excluir {row['contrato']}", type="secondary"):
                 if sb_delete("contratos", f"id=eq.{row['id']}"):
                     st.success("Excluído!"); st.cache_data.clear(); st.rerun()
     else:
