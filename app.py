@@ -885,7 +885,7 @@ elif aba == "novo":
     </style>
     """, unsafe_allow_html=True)
 
-    with st.expander("Importar via IA (Foto / PDF)", expanded=False):
+    with st.expander("Novo Contrato", expanded=False):
         if not ANTHROPIC_KEY:
             st.warning("⚠️ Configure `ANTHROPIC_KEY` nos Secrets do Streamlit para usar a leitura automática.")
         else:
