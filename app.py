@@ -990,14 +990,39 @@ elif aba == "novo":
     if ia:
         st.success("📋 Campos preenchidos pela IA — confira e salve.")
 
+    # ── Seletor de Motorista com opção de cadastrar novo ──────────
+    MOTORISTAS_OPT = ["➕ Novo motorista..."] + MOTORISTAS
+    ia_mot_idx = MOTORISTAS_OPT.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS_OPT else 0
+    mot_sel = st.selectbox("Motorista *", MOTORISTAS_OPT, index=ia_mot_idx, key="mot_sel_novo_contrato")
+
+    if mot_sel == "➕ Novo motorista...":
+        cn1, cn2, cn3 = st.columns([3, 1, 1])
+        novo_nome = cn1.text_input("Nome do novo motorista", placeholder="Ex: JOÃO SILVA", key="novo_mot_nc").strip().upper()
+        tipo_nc = cn2.selectbox("Tipo", ["Com adiantamento", "Sem adiantamento"], key="tipo_mot_nc")
+        cn3.markdown("<br>", unsafe_allow_html=True)
+        if cn3.button("✅ Adicionar", key="btn_add_mot_nc", use_container_width=True):
+            if not novo_nome:
+                st.error("Digite o nome do motorista.")
+            elif novo_nome in MOTORISTAS:
+                st.warning("Motorista já existe.")
+            else:
+                st.session_state.motoristas_extra.append(novo_nome)
+                if tipo_nc == "Sem adiantamento":
+                    SEM.append(novo_nome)
+                st.success(f"✅ Motorista **{novo_nome}** adicionado!")
+                st.session_state["mot_sel_novo_contrato"] = novo_nome
+                st.rerun()
+        mot_final = novo_nome if novo_nome else ""
+    else:
+        mot_final = mot_sel
+
     with st.form("fnovo", clear_on_submit=True):
         st.markdown("**Dados do Contrato**")
         c1,c2,c3 = st.columns(3)
-        mi = MOTORISTAS.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS else 0
         ci = CLIENTES.index(ia.get("cliente","")) if ia.get("cliente","") in CLIENTES else 0
-        mot   = c1.selectbox("Motorista *", MOTORISTAS, index=mi)
-        cli   = c2.selectbox("Cliente *", CLIENTES, index=ci)
-        placa = c3.text_input("Placa *", ia.get("placa","")).upper()
+        st.markdown(f"<div style='padding:4px 0 8px;font-size:13px;color:#6B7280'>Motorista selecionado: <b style='color:#111318'>{mot_final or '—'}</b></div>", unsafe_allow_html=True)
+        cli   = c1.selectbox("Cliente *", CLIENTES, index=ci)
+        placa = c2.text_input("Placa *", ia.get("placa","")).upper()
         c4,c5,c6 = st.columns(3)
         cont  = c4.text_input("Nº Contrato *", ia.get("contrato",""))
         frota = c5.text_input("Frota", ia.get("frota",""))
@@ -1020,17 +1045,17 @@ elif aba == "novo":
         adpago = c13.checkbox("Adiantamento Pago?")
         obs    = st.text_area("Observação", "", height=70)
         if fat_v > 0:
-            a, f = com(mot, fat_v)
+            a, f = com(mot_final, fat_v)
             st.markdown(f"""
             <div style='background:#EFF8FF;border:1px solid #BFDBFE;border-radius:8px;padding:12px 16px;font-size:13px;color:#1A3A5C;margin:8px 0'>
-                💳 {"Sem adiantamento" if mot in SEM else f"Adiantamento: <b style='color:#F59E0B'>{R(a)}</b>"} &nbsp;·&nbsp; Folha: <b style='color:#8B5CF6'>{R(f)}</b>
+                💳 {"Sem adiantamento" if mot_final in SEM else f"Adiantamento: <b style='color:#F59E0B'>{R(a)}</b>"} &nbsp;·&nbsp; Folha: <b style='color:#8B5CF6'>{R(f)}</b>
             </div>""", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         if st.form_submit_button("Salvar Contrato", use_container_width=True):
             if not cont or not fat_v:
                 st.error("Preencha: Nº Contrato e Faturamento Bruto.")
             else:
-                novo = {"id": str(uuid.uuid4()), "motorista": mot, "cliente": cli, "placa": placa,
+                novo = {"id": str(uuid.uuid4()), "motorista": mot_final, "cliente": cli, "placa": placa,
                         "frota": frota, "contrato": cont, "data": str(data_v), "fat_bruto": fat_v,
                         "chapa": chapa_v, "destino": dest, "qtd_veiculos": int(qtd),
                         "adiantamento_pago": adpago,
