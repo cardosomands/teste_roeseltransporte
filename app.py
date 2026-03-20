@@ -1065,10 +1065,15 @@ elif aba == "motorista":
     if not df_all.empty and "data" in df_all.columns:
         if ano_m: df_m = df_m[df_m["data"].dt.year == ano_m]
         if mes_m: df_m = df_m[df_m["data"].dt.month == mes_m]
+    _cols = ["motorista","cliente","contrato","data","fat_bruto","chapa","adiant","folha","destino","status"]
     if not df_m.empty and "motorista" in df_m.columns:
         dm = df_m[df_m["motorista"] == mot]
     else:
-        dm = pd.DataFrame()
+        dm = pd.DataFrame(columns=_cols)
+    # Garantir colunas numéricas mesmo vazio
+    for _c in ["fat_bruto","chapa","adiant","folha"]:
+        if _c not in dm.columns:
+            dm[_c] = 0.0
 
     periodo_m = f"{MESES[mes_m-1]}/{ano_m}" if mes_m and ano_m else \
                 (MESES[mes_m-1] if mes_m else (str(ano_m) if ano_m else "Todos os períodos"))
