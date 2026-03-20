@@ -19,12 +19,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ── CSS PROFISSIONAL (ESTILO DASHBOARD) ────────────────────────────
+# ── CSS PROFISSIONAL ───────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap');
 
-* { font-family: 'DM Sans', sans-serif !important; box-sizing: border-box; }
+* { font-family: 'Instrument Sans', sans-serif !important; box-sizing: border-box; }
 
 /* Fundo principal — marca d'água com as cores originais da logo */
 .stApp {
@@ -47,11 +47,11 @@ st.markdown("""
 
 /* ── SIDEBAR ── */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #1C1C2E 0%, #16213E 60%, #0F3460 100%) !important;
-    border-right: none !important;
+    background: #111318 !important;
+    border-right: 1px solid rgba(255,255,255,0.05) !important;
     min-width: 230px !important;
     max-width: 230px !important;
-    box-shadow: 4px 0 20px rgba(0,0,0,0.15) !important;
+    box-shadow: none !important;
 }
 [data-testid="stSidebar"] * { color: #C8D6E5 !important; }
 [data-testid="stSidebar"] .stRadio label {
@@ -89,31 +89,35 @@ st.markdown("""
 }
 [data-testid="stSidebar"] hr { border-color: rgba(255,255,255,0.1) !important; }
 
-/* Menu item active = crimson accent */
+/* Menu item active */
 [data-testid="stSidebar"] button[kind="primary"] {
-    background: linear-gradient(90deg, rgba(155,28,28,0.35) 0%, rgba(155,28,28,0.15) 100%) !important;
-    border-left: 3px solid #DC2626 !important;
+    background: rgba(220,38,38,0.08) !important;
+    border-left: 2px solid #DC2626 !important;
     border-right: none !important; border-top: none !important; border-bottom: none !important;
-    border-radius: 0 8px 8px 0 !important;
+    border-radius: 0 6px 6px 0 !important;
     color: white !important;
-    font-weight: 700 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    letter-spacing: 0.01em !important;
     box-shadow: none !important;
 }
 [data-testid="stSidebar"] button[kind="secondary"] {
     background: transparent !important;
     border: none !important;
-    color: #94A3B8 !important;
+    color: rgba(255,255,255,0.45) !important;
     font-weight: 500 !important;
+    font-size: 13px !important;
+    letter-spacing: 0.01em !important;
     box-shadow: none !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
 }
 [data-testid="stSidebar"] button[kind="secondary"]:hover {
-    background: rgba(255,255,255,0.07) !important;
-    color: white !important;
+    background: rgba(255,255,255,0.05) !important;
+    color: rgba(255,255,255,0.85) !important;
 }
 
 /* ── TOPBAR ── */
-[data-testid="stHeader"] { background: white !important; border-bottom: 1px solid #E5E9F0; }
+[data-testid="stHeader"] { background: #FAFAFA !important; border-bottom: 1px solid #EBEBEB; }
 
 /* ── CONTEÚDO PRINCIPAL ── */
 .main .block-container {
@@ -124,11 +128,11 @@ st.markdown("""
 /* ── CARDS MÉTRICA ── */
 .metric-card {
     background: white;
-    border-radius: 14px;
-    padding: 22px 24px;
-    border: 1px solid rgba(0,0,0,0.06);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04);
-    transition: all 0.2s ease;
+    border-radius: 10px;
+    padding: 20px 22px;
+    border: 1px solid #EBEBEB;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s ease;
     position: relative;
     overflow: hidden;
 }
@@ -136,40 +140,40 @@ st.markdown("""
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--card-accent, #2D6BE4);
-    border-radius: 14px 14px 0 0;
+    height: 2px;
+    background: var(--card-accent, #111318);
+    border-radius: 10px 10px 0 0;
 }
 .metric-card:hover {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
-    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 .metric-label {
-    font-size: 11px; font-weight: 700; color: #9AAAB8;
-    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;
+    font-size: 10px; font-weight: 600; color: #A0AEC0;
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;
 }
 .metric-value {
-    font-size: 30px; font-weight: 800; color: #1C1C2E; line-height: 1;
+    font-size: 28px; font-weight: 700; color: #111318; line-height: 1;
+    font-variant-numeric: tabular-nums;
 }
 .metric-delta {
-    font-size: 12px; font-weight: 600; margin-top: 8px;
+    font-size: 11px; font-weight: 600; margin-top: 8px;
     display: flex; align-items: center; gap: 4px;
 }
-.delta-up { color: #10B981; }
-.delta-down { color: #EF4444; }
+.delta-up { color: #059669; }
+.delta-down { color: #DC2626; }
 
 /* ── CARDS PAINEL ── */
 .panel-card {
     background: white;
-    border-radius: 14px;
-    padding: 24px;
-    border: 1px solid rgba(0,0,0,0.06);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-radius: 10px;
+    padding: 22px;
+    border: 1px solid #EBEBEB;
+    box-shadow: none;
     height: 100%;
 }
 .panel-title {
-    font-size: 15px; font-weight: 700; color: #1C1C2E;
-    margin-bottom: 20px; letter-spacing: -0.01em;
+    font-size: 13px; font-weight: 700; color: #111318;
+    margin-bottom: 18px; letter-spacing: 0.04em; text-transform: uppercase;
 }
 
 /* ── TABELA ── */
@@ -203,38 +207,37 @@ st.markdown("""
 .stTextInput input, .stNumberInput input, .stTextArea textarea,
 .stSelectbox > div > div, [data-testid="stSelectbox"] > div > div {
     background: white !important;
-    border: 1.5px solid #E2E8F0 !important;
-    border-radius: 10px !important;
-    color: #1C1C2E !important;
+    border: 1px solid #DCDCDC !important;
+    border-radius: 8px !important;
+    color: #111318 !important;
     font-size: 14px !important;
-    transition: border-color 0.15s, box-shadow 0.15s !important;
+    transition: border-color 0.15s !important;
 }
 .stTextInput input:focus, .stNumberInput input:focus {
-    border-color: #2D6BE4 !important;
-    box-shadow: 0 0 0 3px rgba(45,107,228,0.12) !important;
+    border-color: #111318 !important;
+    box-shadow: 0 0 0 2px rgba(17,19,24,0.08) !important;
 }
 
 /* ── BOTÕES ── */
 .stButton > button {
-    background: linear-gradient(135deg, #2D6BE4 0%, #1A54C8 100%) !important;
+    background: #111318 !important;
     color: white !important;
     border: none !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     font-weight: 600 !important;
-    font-size: 14px !important;
+    font-size: 13px !important;
     padding: 10px 20px !important;
-    transition: all 0.18s !important;
-    letter-spacing: 0.01em !important;
-    box-shadow: 0 2px 8px rgba(45,107,228,0.28) !important;
+    transition: all 0.15s !important;
+    letter-spacing: 0.02em !important;
+    box-shadow: none !important;
 }
 .stButton > button:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 6px 18px rgba(45,107,228,0.38) !important;
+    background: #2D2D3A !important;
 }
 button[kind="secondary"] {
     background: white !important;
-    color: #EF4444 !important;
-    border: 1.5px solid #EF4444 !important;
+    color: #DC2626 !important;
+    border: 1px solid #DC2626 !important;
     box-shadow: none !important;
 }
 
@@ -254,10 +257,10 @@ button[kind="secondary"] {
 /* ── FORMS ── */
 [data-testid="stForm"] {
     background: white !important;
-    border: 1.5px solid #E2E8F0 !important;
-    border-radius: 16px !important;
-    padding: 28px !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+    border: 1px solid #EBEBEB !important;
+    border-radius: 10px !important;
+    padding: 24px !important;
+    box-shadow: none !important;
 }
 
 /* ── EXPANDER padrão (branco) ── */
@@ -305,10 +308,10 @@ button[kind="secondary"] {
 [data-testid="stWarning"] { background: #FFFBEB !important; border-color: #F59E0B !important; color: #78350F !important; }
 
 /* ── TIPOGRAFIA ── */
-h1 { color: #1C1C2E !important; font-size: 24px !important; font-weight: 800 !important;
+h1 { color: #111318 !important; font-size: 22px !important; font-weight: 700 !important;
      letter-spacing: -0.02em !important; margin-bottom: 2px !important; }
-h2, h3 { color: #1C1C2E !important; letter-spacing: -0.01em !important; }
-p, .stCaption { color: #64748B !important; }
+h2, h3 { color: #111318 !important; letter-spacing: -0.01em !important; font-weight: 600 !important; }
+p, .stCaption { color: #6B7280 !important; }
 
 /* Esconder hamburger e header do sidebar */
 [data-testid="collapsedControl"] { display: none !important; }
@@ -320,10 +323,10 @@ hr { border-color: #E2E8F0 !important; }
 .main .block-container { padding: 28px 32px !important; max-width: 100% !important; }
 
 /* Status badges */
-.badge-aberto    { background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.03em }
-.badge-adiantado { background:#FFFBEB;color:#D97706;border:1px solid #FDE68A;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.03em }
-.badge-pendente  { background:#F5F3FF;color:#7C3AED;border:1px solid #DDD6FE;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.03em }
-.badge-fechado   { background:#F0FDF4;color:#16A34A;border:1px solid #BBF7D0;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.03em }
+.badge-aberto    { background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;padding:2px 10px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase }
+.badge-adiantado { background:#FFFBEB;color:#D97706;border:1px solid #FDE68A;padding:2px 10px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase }
+.badge-pendente  { background:#F5F3FF;color:#7C3AED;border:1px solid #DDD6FE;padding:2px 10px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase }
+.badge-fechado   { background:#F0FDF4;color:#16A34A;border:1px solid #BBF7D0;padding:2px 10px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase }
 </style>
 """, unsafe_allow_html=True)
 
@@ -572,33 +575,38 @@ prem_map = get_premios()
 with st.sidebar:
     # ── Usuário logado (TOPO) ──────────────────────────────────────
     perfil_nome = st.session_state.perfil
+    nome_limpo = perfil_nome.replace("👤 ","").replace("👩‍💼 ","").strip()
+    inicial = nome_limpo[0].upper() if nome_limpo else "U"
     st.markdown(f"""
-    <div style='padding:14px 14px 12px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:8px'>
-        <div style='font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:0.1em;
-                    font-weight:700;margin-bottom:5px'>Sessão ativa</div>
-        <div style='display:flex;align-items:center;gap:8px'>
-            <div style='width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#9B1C1C,#DC2626);
+    <div style='padding:16px 14px 14px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:10px'>
+        <div style='font-size:9px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.12em;
+                    font-weight:600;margin-bottom:8px'>Sessão ativa</div>
+        <div style='display:flex;align-items:center;gap:10px'>
+            <div style='width:32px;height:32px;border-radius:6px;background:#DC2626;
                         display:flex;align-items:center;justify-content:center;
-                        font-size:13px;font-weight:800;color:white;flex-shrink:0'>
-                {perfil_nome.replace("👤 ","").replace("👩‍💼 ","")[0].upper()}
+                        font-size:13px;font-weight:700;color:white;flex-shrink:0;
+                        font-family:Instrument Sans,sans-serif'>
+                {inicial}
             </div>
-            <div style='font-size:13px;color:white;font-weight:700;line-height:1.2'>
-                {perfil_nome.replace("👤 ","").replace("👩‍💼 ","")}
+            <div>
+                <div style='font-size:13px;color:white;font-weight:600;line-height:1.2;
+                            font-family:Instrument Sans,sans-serif'>{nome_limpo}</div>
+                <div style='font-size:10px;color:rgba(255,255,255,0.35);margin-top:1px'>Administrador</div>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     # ── Menu ───────────────────────────────────────────────────────
-    st.markdown("<div style='padding:4px 14px 4px;font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em'>Menu</div>", unsafe_allow_html=True)
+    st.markdown("<div style='padding:4px 14px 4px;font-size:9px;font-weight:600;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:0.12em'>Navegação</div>", unsafe_allow_html=True)
 
     ABAS = {
-        "📊  Visão Geral": "dashboard",
-        "➕  Novo Contrato": "novo",
-        "📋  Contratos": "contratos",
-        "👤  Motorista": "motorista",
-        "💳  Comissões": "comissoes",
-        "🏆  Prêmios": "premios",
+        "Visão Geral": "dashboard",
+        "Novo Contrato": "novo",
+        "Contratos": "contratos",
+        "Motorista": "motorista",
+        "Comissões": "comissoes",
+        "Prêmios": "premios",
     }
     if "aba" not in st.session_state:
         st.session_state.aba = "dashboard"
@@ -612,22 +620,22 @@ with st.sidebar:
 
     # ── Encerrar sessão ────────────────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🚪  Encerrar sessão", use_container_width=True):
+    if st.button("Sair da sessão", use_container_width=True):
         st.session_state.ok = False
         st.rerun()
 
     # ── Logo no fundo como marca d'água discreta ───────────────────
     st.markdown(f"""
     <div style='position:fixed;bottom:0;left:0;width:230px;
-                padding:16px 14px;
-                border-top:1px solid rgba(255,255,255,0.06);
-                background:linear-gradient(0deg,rgba(15,18,35,0.5) 0%,transparent 100%);
-                pointer-events:none;text-align:center'>
+                padding:14px 14px 18px;
+                border-top:1px solid rgba(255,255,255,0.05);
+                background:#111318;
+                pointer-events:none;text-align:left'>
         <img src="data:image/jpeg;base64,{LOGO_B64}"
-             style='max-width:90px;width:60%;
+             style='max-width:80px;width:55%;
                     filter:brightness(0) invert(1);
-                    opacity:0.15;
-                    border-radius:4px'>
+                    opacity:0.12;
+                    border-radius:3px'>
     </div>
     """, unsafe_allow_html=True)
 
@@ -667,12 +675,12 @@ if aba == "dashboard":
     # Cabeçalho + seletor período
     col_h1, col_h2 = st.columns([3, 1])
     with col_h1:
-        st.markdown("<h1 style='margin:0 0 4px;color:#1C1C2E'>📊 Visão Geral</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='margin:0 0 4px;color:#111318'>📊 Visão Geral</h1>", unsafe_allow_html=True)
     with col_h2:
         st.markdown(f"<div style='text-align:right;padding:6px 0;font-size:12px;color:#8896A7'>🕐 {datetime.now().strftime('%d/%m %H:%M')}</div>", unsafe_allow_html=True)
 
     df, periodo = sel_periodo("dash")
-    st.markdown(f"<p style='color:#8896A7;font-size:13px;margin:-4px 0 20px'>📅 {periodo} &nbsp;·&nbsp; {len(df)} contratos</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:#8896A7;font-size:13px;margin:-4px 0 20px'>{periodo} &nbsp;·&nbsp; {len(df)} contratos</p>", unsafe_allow_html=True)
 
     if df.empty:
         st.info(f"Nenhum dado encontrado para {periodo}.")
@@ -684,10 +692,10 @@ if aba == "dashboard":
         # ── MÉTRICAS TOP ──
         c1, c2, c3, c4, c5 = st.columns(5)
         metricas = [
-            (c1, "💰 Faturamento Total", R_short(fat), f"{meta_pct:.0f}% da meta", meta_pct >= 80, "#1A7FC1"),
+            (c1, "Faturamento Total", R_short(fat), f"{meta_pct:.0f}% da meta", meta_pct >= 80, "#1A7FC1"),
             (c2, "📄 Total de Contratos", str(len(df)), f"{pend} pendentes", pend == 0, "#8B5CF6"),
             (c3, "⏩ Adiantamentos", R_short(df["adiant"].sum()), "pago aos motoristas", True, "#F59E0B"),
-            (c4, "📋 Folha Total", R_short(df["folha"].sum()), "comissão motoristas", True, "#10B981"),
+            (c4, "Folha Total", R_short(df["folha"].sum()), "comissão motoristas", True, "#10B981"),
             (c5, "🔧 Total Chapas", R_short(df["chapa"].sum()), "custo chapas", True, "#EC4899"),
         ]
         for col, label, valor, sub, positivo, cor in metricas:
@@ -709,7 +717,7 @@ if aba == "dashboard":
 
         with col_g1:
             st.markdown("""<div class='panel-card'>
-                <div class='panel-title'>📈 Faturamento por Motorista</div>""",
+                <div class='panel-title'>Faturamento por Motorista</div>""",
                 unsafe_allow_html=True)
             fm = df.groupby("motorista")["fat_bruto"].sum().sort_values().reset_index()
             fm["cor"] = fm["fat_bruto"].apply(lambda x: "#9B1C1C" if x >= META else "#2D6BE4")
@@ -750,7 +758,7 @@ if aba == "dashboard":
 
         with col_p1:
             st.markdown("""<div class='panel-card'>
-                <div class='panel-title'>🏆 Top Motoristas</div>""",
+                <div class='panel-title'>Top Motoristas</div>""",
                 unsafe_allow_html=True)
             rk = df.groupby("motorista")["fat_bruto"].sum().sort_values(ascending=False).head(5).reset_index()
             st.markdown("<table style='width:100%;border-collapse:collapse'>", unsafe_allow_html=True)
@@ -796,7 +804,7 @@ if aba == "dashboard":
 
         with col_p3:
             st.markdown("""<div class='panel-card'>
-                <div class='panel-title'>📊 Resumo Financeiro</div>""",
+                <div class='panel-title'>Resumo Financeiro</div>""",
                 unsafe_allow_html=True)
             total_adiant = df["adiant"].sum()
             total_folha  = df["folha"].sum()
@@ -827,7 +835,7 @@ elif aba == "novo":
         st.warning("Sem permissão para cadastrar contratos.")
         st.stop()
 
-    st.markdown("<h1 style='color:#1C1C2E'>➕ Novo Contrato</h1><p style='color:#94A3B8;margin-top:-8px'>Cadastre um novo contrato de transporte</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#111318;font-size:22px;font-weight:700;margin-bottom:2px'>Novo Contrato</h1><p style='color:#9CA3AF;font-size:13px;margin-top:0'>Cadastre um novo contrato de transporte</p>", unsafe_allow_html=True)
 
     # CSS escuro só para o expander da IA
     st.markdown("""
@@ -874,7 +882,7 @@ elif aba == "novo":
     </style>
     """, unsafe_allow_html=True)
 
-    with st.expander("📷 Importar via IA (Foto / PDF)", expanded=False):
+    with st.expander("Importar via IA (Foto / PDF)", expanded=False):
         if not ANTHROPIC_KEY:
             st.warning("⚠️ Configure `ANTHROPIC_KEY` nos Secrets do Streamlit para usar a leitura automática.")
         else:
@@ -995,7 +1003,7 @@ elif aba == "novo":
                 💳 {"Sem adiantamento" if mot in SEM else f"Adiantamento: <b style='color:#F59E0B'>{R(a)}</b>"} &nbsp;·&nbsp; Folha: <b style='color:#8B5CF6'>{R(f)}</b>
             </div>""", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.form_submit_button("✅ Salvar Contrato", use_container_width=True):
+        if st.form_submit_button("Salvar Contrato", use_container_width=True):
             if not cont or not fat_v:
                 st.error("Preencha: Nº Contrato e Faturamento Bruto.")
             else:
@@ -1017,9 +1025,9 @@ elif aba == "novo":
 # CONTRATOS
 # ══════════════════════════════════════════════════════════════════
 elif aba == "contratos":
-    st.markdown("<h1 style='color:#1C1C2E'>📋 Contratos</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#111318'>Contratos</h1>", unsafe_allow_html=True)
     df, periodo = sel_periodo("cont")
-    st.markdown(f"<p style='color:#8896A7;margin-top:-8px'>📅 {periodo}</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:#8896A7;margin-top:-8px'>{periodo}</p>", unsafe_allow_html=True)
 
     c1,c2,c3 = st.columns(3)
     busca = c1.text_input("🔍 Buscar", "", placeholder="Motorista, nº contrato, destino…")
@@ -1079,7 +1087,7 @@ elif aba == "contratos":
         with col_e2:
             try:
                 excel_buf = gerar_excel(dv, f"Contratos {periodo}")
-                st.download_button("📊 Exportar Excel (.xlsx)", excel_buf,
+                st.download_button("Exportar relatório (.xlsx)", excel_buf,
                     f"contratos_{periodo.replace('/','_')}.xlsx",
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True)
@@ -1099,10 +1107,10 @@ elif aba == "contratos":
                         index=STATUS.index(row.get("status","ABERTO")) if row.get("status") in STATUS else 0)
                     ea = ec2.checkbox("Adiantamento Pago?", value=bool(row.get("adiantamento_pago")))
                     eo = st.text_area("Obs", value=row.get("obs","") or "")
-                    if st.form_submit_button("💾 Salvar"):
+                    if st.form_submit_button("Salvar"):
                         if sb_patch("contratos", f"id=eq.{row['id']}", {"status": es, "adiantamento_pago": ea, "obs": eo}):
                             st.success("✅ Salvo!"); st.cache_data.clear(); st.rerun()
-            if st.button(f"🗑️ Excluir {row['contrato']}", type="secondary"):
+            if st.button(f"Excluir {row['contrato']}", type="secondary"):
                 if sb_delete("contratos", f"id=eq.{row['id']}"):
                     st.success("Excluído!"); st.cache_data.clear(); st.rerun()
     else:
@@ -1112,10 +1120,10 @@ elif aba == "contratos":
 # POR MOTORISTA
 # ══════════════════════════════════════════════════════════════════
 elif aba == "motorista":
-    st.markdown("<h1 style='color:#1C1C2E'>👤 Motorista</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#111318'>Motorista</h1>", unsafe_allow_html=True)
 
     # ── Cadastrar novo motorista ───────────────────────────────────
-    with st.expander("➕ Cadastrar novo motorista", expanded=False):
+    with st.expander("Cadastrar novo motorista", expanded=False):
         col_nm1, col_nm2 = st.columns([3, 1])
         with col_nm1:
             novo_mot = st.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA",
@@ -1125,7 +1133,7 @@ elif aba == "motorista":
                                     key="novo_motorista_tipo")
         col_btn1, col_btn2 = st.columns([2, 3])
         with col_btn1:
-            if st.button("✅ Cadastrar", use_container_width=True, key="btn_cadastrar_mot"):
+            if st.button("Cadastrar", use_container_width=True, key="btn_cadastrar_mot"):
                 if not novo_mot:
                     st.error("Digite o nome do motorista.")
                 elif novo_mot in MOTORISTAS:
@@ -1162,14 +1170,14 @@ elif aba == "motorista":
     # Filtros na mesma linha: Motorista | Ano | Mês
     cf1, cf2, cf3 = st.columns([2, 1, 1])
     with cf1:
-        mot = st.selectbox("👤 Motorista", MOTORISTAS, key="mot_nome")
+        mot = st.selectbox("Motorista", MOTORISTAS, key="mot_nome")
     with cf2:
-        ano_m = st.selectbox("📅 Ano", anos_list_m,
+        ano_m = st.selectbox("Ano", anos_list_m,
             index=anos_list_m.index(datetime.now().year) if datetime.now().year in anos_list_m else 1,
             format_func=lambda x: "Todos" if x == 0 else str(x),
             key="mot_ano")
     with cf3:
-        mes_m = st.selectbox("🗓️ Mês", [0] + list(range(1, 13)),
+        mes_m = st.selectbox("Mês", [0] + list(range(1, 13)),
             index=datetime.now().month,
             format_func=lambda x: "Todos" if x == 0 else MESES[x - 1],
             key="mot_mes")
@@ -1257,9 +1265,9 @@ elif aba == "motorista":
         except: pass
 
 elif aba == "comissoes":
-    st.markdown("<h1 style='color:#1C1C2E'>💳 Comissões</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#111318'>💳 Comissões</h1>", unsafe_allow_html=True)
     df, periodo = sel_periodo("com")
-    st.markdown(f"<p style='color:#8896A7;margin-top:-8px'>📅 {periodo}</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:#8896A7;margin-top:-8px'>{periodo}</p>", unsafe_allow_html=True)
     if df.empty:
         st.info("Nenhum dado no período.")
     else:
@@ -1312,9 +1320,9 @@ elif aba == "comissoes":
 # PRÊMIOS
 # ══════════════════════════════════════════════════════════════════
 elif aba == "premios":
-    st.markdown(f"<h1 style='color:#1C1C2E'>🏆 Prêmios</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h1 style='color:#111318'>🏆 Prêmios</h1>", unsafe_allow_html=True)
     df, periodo = sel_periodo("prem")
-    st.markdown(f"<p style='color:#8896A7;margin-top:-8px'>Meta: {R(META)} · 📅 {periodo}</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:#8896A7;margin-top:-8px'>Meta: {R(META)} · {periodo}</p>", unsafe_allow_html=True)
     if df.empty:
         st.info("Nenhum dado no período.")
     else:
@@ -1343,6 +1351,6 @@ elif aba == "premios":
                             index=STATUS_P.index(prem.get("status","QUALIFICADO")) if prem.get("status") in STATUS_P else 0)
                         pv = pc2.number_input("Valor (R$)", value=float(prem.get("valor") or 0), format="%.2f")
                         po = st.text_input("Observação", value=prem.get("obs","") or "")
-                        if st.form_submit_button("💾 Salvar Prêmio"):
+                        if st.form_submit_button("Salvar Prêmio"):
                             if sb_post("premios", {"motorista": mot, "status": ps, "valor": pv, "obs": po}, upsert=True):
                                 st.success("✅ Salvo!"); st.cache_data.clear(); st.rerun()
