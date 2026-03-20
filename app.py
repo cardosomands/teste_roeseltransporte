@@ -990,49 +990,41 @@ elif aba == "novo":
     if ia:
         st.success("📋 Campos preenchidos pela IA — confira e salve.")
 
-    # ── Seletor de Motorista com opção de cadastrar novo ──────────
-    MOTORISTAS_OPT = MOTORISTAS + ["➕ Adicionar novo motorista..."]
+    # ── Cadastrar novo motorista (antes do form) ───────────────────
+    with st.expander("➕ Cadastrar novo motorista"):
+        an1, an2, an3 = st.columns([3, 2, 1])
+        novo_nome_nc = an1.text_input("Nome (em maiúsculas)", placeholder="Ex: JOÃO SILVA", key="nc_novo_mot_nome").strip().upper()
+        tipo_nc      = an2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="nc_novo_mot_tipo")
+        an3.markdown("<br>", unsafe_allow_html=True)
+        if an3.button("✅ Adicionar", key="nc_btn_add_mot", use_container_width=True):
+            if not novo_nome_nc:
+                st.error("Digite o nome do motorista.")
+            elif novo_nome_nc in MOTORISTAS:
+                st.warning(f"'{novo_nome_nc}' já existe na lista.")
+            else:
+                st.session_state.motoristas_extra.append(novo_nome_nc)
+                if tipo_nc.startswith("Sem") and novo_nome_nc not in SEM:
+                    SEM.append(novo_nome_nc)
+                st.session_state["nc_mot_escolhido"] = novo_nome_nc
+                st.success(f"✅ **{novo_nome_nc}** adicionado! Agora selecione-o no formulário.")
+                st.rerun()
 
-    # Índice salvo em session state para persistir após rerun
-    if "nc_mot_escolhido" not in st.session_state:
-        st.session_state.nc_mot_escolhido = MOTORISTAS[0] if MOTORISTAS else ""
-
-    # Se IA preencheu, usar o valor dela
-    if ia.get("motorista","") in MOTORISTAS:
-        st.session_state.nc_mot_escolhido = ia["motorista"]
-
-    idx_mot = MOTORISTAS_OPT.index(st.session_state.nc_mot_escolhido) if st.session_state.nc_mot_escolhido in MOTORISTAS_OPT else 0
-    mot_sel = st.selectbox("Motorista *", MOTORISTAS_OPT, index=idx_mot, key="nc_mot_sel")
-
-    if mot_sel == "➕ Adicionar novo motorista...":
-        with st.container():
-            an1, an2, an3 = st.columns([3, 2, 1])
-            novo_nome_nc = an1.text_input("Nome (em maiúsculas)", placeholder="Ex: JOÃO SILVA", key="nc_novo_mot_nome").strip().upper()
-            tipo_nc      = an2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="nc_novo_mot_tipo")
-            an3.markdown("<br>", unsafe_allow_html=True)
-            if an3.button("➕ Adicionar", key="nc_btn_add_mot", use_container_width=True):
-                if not novo_nome_nc:
-                    st.error("Digite o nome do motorista.")
-                elif novo_nome_nc in MOTORISTAS:
-                    st.warning(f"'{novo_nome_nc}' já existe na lista.")
-                else:
-                    st.session_state.motoristas_extra.append(novo_nome_nc)
-                    if tipo_nc.startswith("Sem") and novo_nome_nc not in SEM:
-                        SEM.append(novo_nome_nc)
-                    st.session_state.nc_mot_escolhido = novo_nome_nc
-                    st.success(f"✅ **{novo_nome_nc}** adicionado!")
-                    st.rerun()
-        mot_final = novo_nome_nc if novo_nome_nc else ""
-    else:
-        st.session_state.nc_mot_escolhido = mot_sel
-        mot_final = mot_sel
+    # Recalcula lista após possível adição
+    MOTORISTAS = sorted(set(_MOTORISTAS_BASE + st.session_state.motoristas_extra))
 
     with st.form("fnovo", clear_on_submit=True):
         st.markdown("**Dados do Contrato**")
         c1,c2,c3 = st.columns(3)
+
+        # Motorista — agora DENTRO do form
+        mi = MOTORISTAS.index(st.session_state.get("nc_mot_escolhido", MOTORISTAS[0])) \
+             if st.session_state.get("nc_mot_escolhido", "") in MOTORISTAS else \
+             (MOTORISTAS.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS else 0)
+        mot_final = c1.selectbox("Cadastrar motorista", MOTORISTAS, index=mi)
+
         ci = CLIENTES.index(ia.get("cliente","")) if ia.get("cliente","") in CLIENTES else 0
-        cli   = c1.selectbox("Cliente *", CLIENTES, index=ci)
-        placa = c2.text_input("Placa *", ia.get("placa","")).upper()
+        cli   = c2.selectbox("Cliente *", CLIENTES, index=ci)
+        placa = c3.text_input("Placa *", ia.get("placa","")).upper()
         c4,c5,c6 = st.columns(3)
         cont  = c4.text_input("Nº Contrato *", ia.get("contrato",""))
         frota = c5.text_input("Frota", ia.get("frota",""))
