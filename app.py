@@ -993,26 +993,46 @@ elif aba == "novo":
     # Recalcula lista
     MOTORISTAS = sorted(set(_MOTORISTAS_BASE + st.session_state.motoristas_extra))
 
+    # ── Botão cadastrar motorista acima do form ────────────────────
+    if st.button("➕ Cadastrar motorista", key="nc_btn_toggle_cad"):
+        st.session_state["nc_show_cad_mot"] = not st.session_state.get("nc_show_cad_mot", False)
+
+    if st.session_state.get("nc_show_cad_mot", False):
+        with st.container():
+            st.markdown("<div style='background:white;border:1px solid #E5E7EB;border-radius:12px;padding:20px;margin-bottom:16px'>", unsafe_allow_html=True)
+            st.markdown("**Cadastrar novo motorista**")
+            nc1, nc2 = st.columns([3, 2])
+            novo_mot_nc = nc1.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA", key="nc_novo_mot_nome").strip().upper()
+            tipo_nc = nc2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="nc_novo_mot_tipo")
+            if st.button("✅ Salvar motorista", key="nc_btn_salvar_mot"):
+                if not novo_mot_nc:
+                    st.error("Digite o nome do motorista.")
+                elif novo_mot_nc in MOTORISTAS:
+                    st.warning(f"'{novo_mot_nc}' já existe.")
+                else:
+                    st.session_state.motoristas_extra.append(novo_mot_nc)
+                    if tipo_nc.startswith("Sem") and novo_mot_nc not in SEM:
+                        SEM.append(novo_mot_nc)
+                    st.session_state["nc_show_cad_mot"] = False
+                    st.session_state["nc_mot_pre"] = novo_mot_nc
+                    st.success(f"✅ **{novo_mot_nc}** cadastrado!")
+                    st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    MOTORISTAS = sorted(set(_MOTORISTAS_BASE + st.session_state.motoristas_extra))
+
     with st.form("fnovo", clear_on_submit=True):
         st.markdown("**Dados do Contrato**")
         c1,c2,c3 = st.columns(3)
 
-        MOTORISTAS_OPT = MOTORISTAS + ["➕ Cadastrar motorista..."]
-        mi = MOTORISTAS_OPT.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS_OPT else 0
-        mot_sel   = c1.selectbox("Motorista *", MOTORISTAS_OPT, index=mi)
+        mi = MOTORISTAS.index(st.session_state.get("nc_mot_pre", MOTORISTAS[0])) \
+             if st.session_state.get("nc_mot_pre","") in MOTORISTAS else \
+             (MOTORISTAS.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS else 0)
+        mot_final = c1.selectbox("Motorista *", MOTORISTAS, index=mi)
 
         ci = CLIENTES.index(ia.get("cliente","")) if ia.get("cliente","") in CLIENTES else 0
         cli   = c2.selectbox("Cliente *", CLIENTES, index=ci)
         placa = c3.text_input("Placa *", ia.get("placa","")).upper()
-
-        # Se escolheu cadastrar novo, mostra campos extras
-        if mot_sel == "➕ Cadastrar motorista...":
-            nc1, nc2 = st.columns([3, 2])
-            novo_mot_nome = nc1.text_input("Nome do novo motorista", placeholder="Ex: JOÃO SILVA", key="fnovo_novo_mot")
-            novo_mot_tipo = nc2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="fnovo_novo_tipo")
-            mot_final = novo_mot_nome.strip().upper() if novo_mot_nome else ""
-        else:
-            mot_final = mot_sel
 
         c4,c5,c6 = st.columns(3)
         cont  = c4.text_input("Nº Contrato *", ia.get("contrato",""))
@@ -1043,16 +1063,9 @@ elif aba == "novo":
             </div>""", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         if st.form_submit_button("Salvar Contrato", use_container_width=True):
-            if mot_sel == "➕ Cadastrar motorista..." and not mot_final:
-                st.error("Digite o nome do novo motorista.")
-            elif not cont or not fat_v:
-                st.error("Preencha: Nº Contrato e Faturamento Bruto.")
+            if not mot_final or not cont or not fat_v:
+                st.error("Preencha: Motorista, Nº Contrato e Faturamento Bruto.")
             else:
-                # Salva novo motorista na sessão se for novo
-                if mot_sel == "➕ Cadastrar motorista..." and mot_final not in MOTORISTAS:
-                    st.session_state.motoristas_extra.append(mot_final)
-                    if "novo_mot_tipo" in st.session_state and st.session_state.fnovo_novo_tipo.startswith("Sem"):
-                        SEM.append(mot_final)
                 novo = {"id": str(uuid.uuid4()), "motorista": mot_final, "cliente": cli, "placa": placa,
                         "frota": frota, "contrato": cont, "data": str(data_v), "fat_bruto": fat_v,
                         "chapa": chapa_v, "destino": dest, "qtd_veiculos": int(qtd),
@@ -1166,16 +1179,39 @@ elif aba == "contratos":
 # POR MOTORISTA
 # ══════════════════════════════════════════════════════════════════
 elif aba == "motorista":
-    st.markdown("<h1 style='color:#111318'>Motorista</h1>", unsafe_allow_html=True)
+    h1col, btncol = st.columns([5, 1])
+    h1col.markdown("<h1 style='color:#111318'>Motorista</h1>", unsafe_allow_html=True)
+    btncol.markdown("<br>", unsafe_allow_html=True)
+    if btncol.button("➕ Cadastrar motorista", use_container_width=True):
+        st.session_state["show_cad_mot"] = not st.session_state.get("show_cad_mot", False)
+
+    if st.session_state.get("show_cad_mot", False):
+        with st.container():
+            st.markdown("<div style='background:white;border:1px solid #E5E7EB;border-radius:12px;padding:20px;margin-bottom:16px'>", unsafe_allow_html=True)
+            st.markdown("**Cadastrar novo motorista**")
+            am1, am2 = st.columns([3, 2])
+            novo_mot_m = am1.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA", key="aba_mot_novo_nome").strip().upper()
+            tipo_mot_m = am2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="aba_mot_novo_tipo")
+            if st.button("✅ Salvar motorista", key="aba_mot_btn_add"):
+                if not novo_mot_m:
+                    st.error("Digite o nome do motorista.")
+                elif novo_mot_m in MOTORISTAS:
+                    st.warning(f"'{novo_mot_m}' já existe.")
+                else:
+                    st.session_state.motoristas_extra.append(novo_mot_m)
+                    if tipo_mot_m.startswith("Sem") and novo_mot_m not in SEM:
+                        SEM.append(novo_mot_m)
+                    st.session_state["show_cad_mot"] = False
+                    st.success(f"✅ **{novo_mot_m}** cadastrado!")
+                    st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
 
     anos_banco_m = set(df_all["data"].dt.year.dropna().unique().astype(int).tolist()) if not df_all.empty else set()
     anos_list_m = [0] + sorted(anos_banco_m | set(range(2024, 2031)), reverse=True)
 
-    # Filtros na mesma linha: Motorista | Ano | Mês
     cf1, cf2, cf3 = st.columns([2, 1, 1])
     with cf1:
-        MOTORISTAS_M_OPT = MOTORISTAS + ["➕ Cadastrar motorista..."]
-        mot_m_sel = st.selectbox("Motorista", MOTORISTAS_M_OPT, key="mot_nome")
+        mot = st.selectbox("Motorista", MOTORISTAS, key="mot_nome")
     with cf2:
         ano_m = st.selectbox("Ano", anos_list_m,
             index=anos_list_m.index(datetime.now().year) if datetime.now().year in anos_list_m else 1,
@@ -1186,27 +1222,6 @@ elif aba == "motorista":
             index=datetime.now().month,
             format_func=lambda x: "Todos" if x == 0 else MESES[x - 1],
             key="mot_mes")
-
-    if mot_m_sel == "➕ Cadastrar motorista...":
-        with st.container():
-            am1, am2, am3 = st.columns([3, 2, 1])
-            novo_mot_m = am1.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA", key="aba_mot_novo_nome").strip().upper()
-            tipo_mot_m = am2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="aba_mot_novo_tipo")
-            am3.markdown("<br>", unsafe_allow_html=True)
-            if am3.button("➕ Adicionar", key="aba_mot_btn_add", use_container_width=True):
-                if not novo_mot_m:
-                    st.error("Digite o nome do motorista.")
-                elif novo_mot_m in MOTORISTAS:
-                    st.warning(f"'{novo_mot_m}' já existe.")
-                else:
-                    st.session_state.motoristas_extra.append(novo_mot_m)
-                    if tipo_mot_m.startswith("Sem") and novo_mot_m not in SEM:
-                        SEM.append(novo_mot_m)
-                    st.success(f"✅ **{novo_mot_m}** adicionado!")
-                    st.rerun()
-        mot = novo_mot_m if novo_mot_m else (MOTORISTAS[0] if MOTORISTAS else "")
-    else:
-        mot = mot_m_sel
 
     # Filtrar dados pelo período e motorista
     df_m = df_all.copy()
