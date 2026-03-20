@@ -925,9 +925,10 @@ elif aba == "novo":
         chapa_v = c8.number_input("Chapa (R$)", float(ia.get("chapa",0)), step=50.0, format="%.2f")
         qtd     = c9.number_input("Qtd Veículos", int(ia.get("qtd_veiculos",0)), step=1)
         st.markdown("**Informações Adicionais**")
-        c10,c11 = st.columns(2)
-        dest   = c10.text_input("Destino", ia.get("destino","")).upper()
-        sts    = c11.selectbox("Status", STATUS)
+        c10,c11,c11b = st.columns(3)
+        orig   = c10.text_input("Origem", ia.get("origem","")).upper()
+        dest   = c11.text_input("Destino", ia.get("destino","")).upper()
+        sts    = c11b.selectbox("Status", STATUS)
         c12,c13 = st.columns(2)
         dt_pag = c12.date_input("Dt. Pagamento", value=None)
         adpago = c13.checkbox("Adiantamento Pago?")
@@ -945,7 +946,7 @@ elif aba == "novo":
             else:
                 novo = {"id": str(uuid.uuid4()), "motorista": mot_final, "cliente": cli, "placa": placa,
                         "frota": frota, "contrato": cont, "data": str(data_v), "fat_bruto": fat_v,
-                        "chapa": chapa_v, "destino": dest, "qtd_veiculos": int(qtd),
+                        "chapa": chapa_v, "origem": orig, "destino": dest, "qtd_veiculos": int(qtd),
                         "adiantamento_pago": adpago,
                         "dt_pagamento": str(dt_pag) if dt_pag else None,
                         "status": sts, "obs": obs}
@@ -1043,9 +1044,10 @@ elif aba == "contratos":
                 echapa = ec2.number_input("Chapa (R$)", value=float(row.get("chapa",0) or 0), step=50.0, format="%.2f")
                 eqtd   = ec3.number_input("Qtd Veículos", value=int(row.get("qtd_veiculos",0) or 0), step=1)
                 st.markdown("**Informações Adicionais**")
-                ed1, ed2 = st.columns(2)
-                edest = ed1.text_input("Destino", value=str(row.get("destino","") or "")).upper()
-                es    = ed2.selectbox("Status", STATUS,
+                ed1, ed2, ed3 = st.columns(3)
+                eorig = ed1.text_input("Origem", value=str(row.get("origem","") or "")).upper()
+                edest = ed2.text_input("Destino", value=str(row.get("destino","") or "")).upper()
+                es    = ed3.selectbox("Status", STATUS,
                     index=STATUS.index(row.get("status","ABERTO")) if row.get("status") in STATUS else 0)
                 ee1, ee2 = st.columns(2)
                 try:
@@ -1062,7 +1064,7 @@ elif aba == "contratos":
                         "motorista": em, "cliente": ec, "placa": ep,
                         "contrato": econt, "frota": efrota, "data": str(edata),
                         "fat_bruto": efat, "chapa": echapa, "qtd_veiculos": int(eqtd),
-                        "destino": edest, "status": es,
+                        "origem": eorig, "destino": edest, "status": es,
                         "dt_pagamento": str(edtpag) if edtpag else None,
                         "adiantamento_pago": ea_pago, "obs": eobs
                     }
@@ -1082,12 +1084,12 @@ elif aba == "contratos":
 
         else:
             # Tabela normal — clicar seleciona para edição
-            cols = [c for c in ["motorista","cliente","contrato","data","fat_bruto","chapa","destino","status"] if c in dv.columns]
+            cols = [c for c in ["motorista","cliente","contrato","data","fat_bruto","chapa","origem","destino","status"] if c in dv.columns]
             ds = dv[cols].copy()
             ds["data"] = ds["data"].dt.strftime("%d/%m/%Y")
             ds["fat_bruto"] = ds["fat_bruto"].apply(R)
             ds["chapa"] = ds["chapa"].apply(R)
-            ds.columns = ["MOTORISTA","CLIENTE","CONTRATO","DATA","FAT. BRUTO","CHAPA","DESTINO","STATUS"][:len(cols)]
+            ds.columns = ["MOTORISTA","CLIENTE","CONTRATO","DATA","FAT. BRUTO","CHAPA","ORIGEM","DESTINO","STATUS"][:len(cols)]
 
             if perm == "total":
                 sel_result = st.dataframe(
