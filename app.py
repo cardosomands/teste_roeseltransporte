@@ -338,7 +338,7 @@ hr { border-color: #E2E8F0 !important; }
 """, unsafe_allow_html=True)
 
 # ── SUPABASE ───────────────────────────────────────────────────────
-SUPABASE_URL = "https://lmcefcmjatnixrsggyvz.supabase.co"
+SUPABASE_URL = "https://pwqiebsubgoxiplkxzdp.supabase.co"
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 ANTHROPIC_KEY = st.secrets.get("ANTHROPIC_KEY", "")
 
