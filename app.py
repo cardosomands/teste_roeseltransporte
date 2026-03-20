@@ -896,12 +896,13 @@ elif aba == "novo":
                     color: white !important;
                     border: none !important;
                     border-radius: 10px !important;
-                    font-weight: 700 !important;
-                    font-size: 13px !important;
-                    letter-spacing: 0.03em !important;
-                    padding: 11px 16px !important;
+                    font-weight: 800 !important;
+                    font-size: 15px !important;
+                    letter-spacing: 0.04em !important;
+                    padding: 13px 16px !important;
                     box-shadow: 0 4px 16px rgba(45,107,228,0.35) !important;
                     transition: all 0.18s !important;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
                 }
                 .btn-ia > div > button:hover {
                     transform: translateY(-1px) !important;
@@ -910,8 +911,8 @@ elif aba == "novo":
                 </style>
                 <br>
                 <div style='background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:14px 16px;margin-bottom:12px;'>
-                    <div style='font-size:11px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px'>✨ Leitura automática</div>
-                    <div style='font-size:12px;color:#3B82F6;line-height:1.4'>A IA extrai os dados do contrato em segundos.</div>
+                    <div style='font-size:12px;font-weight:800;color:#1E3A8A;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px'>✨ Leitura automática</div>
+                    <div style='font-size:13px;color:#1D4ED8;font-weight:600;line-height:1.4'>A IA extrai os dados do contrato em segundos.</div>
                 </div>
                 """, unsafe_allow_html=True)
                 with st.container():
