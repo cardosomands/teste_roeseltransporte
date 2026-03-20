@@ -565,16 +565,27 @@ prem_map = get_premios()
 # SIDEBAR
 # ══════════════════════════════════════════════════════════════════
 with st.sidebar:
-    # Logo / Marca — com logo real
+    # ── Usuário logado (TOPO) ──────────────────────────────────────
+    perfil_nome = st.session_state.perfil
     st.markdown(f"""
-    <div style='padding:20px 14px 16px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;text-align:center'>
-        <img src="data:image/jpeg;base64,{LOGO_B64}"
-             style='max-width:160px;width:100%;border-radius:8px;filter:brightness(0) invert(1);opacity:0.92'>
+    <div style='padding:14px 14px 12px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:8px'>
+        <div style='font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:0.1em;
+                    font-weight:700;margin-bottom:5px'>Sessão ativa</div>
+        <div style='display:flex;align-items:center;gap:8px'>
+            <div style='width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#9B1C1C,#DC2626);
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:13px;font-weight:800;color:white;flex-shrink:0'>
+                {perfil_nome.replace("👤 ","").replace("👩‍💼 ","")[0].upper()}
+            </div>
+            <div style='font-size:13px;color:white;font-weight:700;line-height:1.2'>
+                {perfil_nome.replace("👤 ","").replace("👩‍💼 ","")}
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Menu
-    st.markdown("<div style='padding:8px 14px 4px;font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em'>Menu</div>", unsafe_allow_html=True)
+    # ── Menu ───────────────────────────────────────────────────────
+    st.markdown("<div style='padding:4px 14px 4px;font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em'>Menu</div>", unsafe_allow_html=True)
 
     ABAS = {
         "📊  Visão Geral": "dashboard",
@@ -594,21 +605,26 @@ with st.sidebar:
             st.session_state.aba = key
             st.rerun()
 
+    # ── Encerrar sessão ────────────────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)
-    st.divider()
-
-    # Usuário logado
-    perfil_nome = st.session_state.perfil
-    st.markdown(f"""
-    <div style='padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
-                border-radius:10px;margin:4px 0'>
-        <div style='font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;font-weight:600'>Sessão ativa</div>
-        <div style='font-size:13px;color:white;font-weight:700'>{perfil_nome}</div>
-    </div>
-    """, unsafe_allow_html=True)
     if st.button("🚪  Encerrar sessão", use_container_width=True):
         st.session_state.ok = False
         st.rerun()
+
+    # ── Logo no fundo como marca d'água discreta ───────────────────
+    st.markdown(f"""
+    <div style='position:fixed;bottom:0;left:0;width:230px;
+                padding:16px 14px;
+                border-top:1px solid rgba(255,255,255,0.06);
+                background:linear-gradient(0deg,rgba(15,18,35,0.5) 0%,transparent 100%);
+                pointer-events:none;text-align:center'>
+        <img src="data:image/jpeg;base64,{LOGO_B64}"
+             style='max-width:90px;width:60%;
+                    filter:brightness(0) invert(1);
+                    opacity:0.15;
+                    border-radius:4px'>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ── SELETOR DE PERÍODO INLINE ─────────────────────────────────────
 def sel_periodo(key_suffix=""):
