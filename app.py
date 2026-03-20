@@ -26,14 +26,9 @@ st.markdown("""
 
 * { font-family: 'Instrument Sans', sans-serif !important; box-sizing: border-box; }
 
-/* Fundo principal — marca d'água com as cores originais da logo */
+/* Fundo principal */
 .stApp {
     background-color: #F0F2F6 !important;
-    background-image: url("data:image/jpeg;base64,{LOGO_B64}") !important;
-    background-repeat: no-repeat !important;
-    background-position: center center !important;
-    background-size: 500px auto !important;
-    background-attachment: fixed !important;
 }
 .stApp::before {
     content: '';
@@ -342,22 +337,6 @@ hr { border-color: #E2E8F0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Injeta a logo real como marca d'água no fundo ─────────────────
-st.markdown(f"""
-<style>
-.stApp {{
-    background-image: url("data:image/jpeg;base64,{LOGO_B64}") !important;
-    background-repeat: no-repeat !important;
-    background-position: center center !important;
-    background-size: 420px auto !important;
-    background-attachment: fixed !important;
-}}
-.stApp::before {{
-    background-color: rgba(240,242,246,0.93) !important;
-}}
-</style>
-""", unsafe_allow_html=True)
-
 # ── SUPABASE ───────────────────────────────────────────────────────
 SUPABASE_URL = "https://lmcefcmjatnixrsggyvz.supabase.co"
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
@@ -574,6 +553,22 @@ if not st.session_state.ok:
     st.stop()
 
 perm = st.session_state.perm
+
+# ── Logo como marca d'água (só para usuários logados) ─────────────
+st.markdown(f"""
+<style>
+.stApp {{
+    background-image: url("data:image/jpeg;base64,{LOGO_B64}") !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: 420px auto !important;
+    background-attachment: fixed !important;
+}}
+.stApp::before {{
+    background-color: rgba(240,242,246,0.93) !important;
+}}
+</style>
+""", unsafe_allow_html=True)
 
 # ── DADOS ──────────────────────────────────────────────────────────
 @st.cache_data(ttl=15)
