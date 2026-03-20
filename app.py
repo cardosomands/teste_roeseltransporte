@@ -310,8 +310,10 @@ h1 { color: #1C1C2E !important; font-size: 24px !important; font-weight: 800 !im
 h2, h3 { color: #1C1C2E !important; letter-spacing: -0.01em !important; }
 p, .stCaption { color: #64748B !important; }
 
-/* Esconder hamburger */
+/* Esconder hamburger e header do sidebar */
 [data-testid="collapsedControl"] { display: none !important; }
+[data-testid="stSidebarHeader"] { display: none !important; }
+section[data-testid="stSidebar"] > div:first-child > div:first-child { padding-top: 0 !important; }
 hr { border-color: #E2E8F0 !important; }
 
 /* Conteúdo principal */
