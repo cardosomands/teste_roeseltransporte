@@ -1004,30 +1004,22 @@ elif aba == "contratos":
     st.markdown("<br>", unsafe_allow_html=True)
 
     if not dv.empty:
-        cols = [c for c in ["motorista","cliente","contrato","data","fat_bruto","chapa","destino","status"] if c in dv.columns]
-        ds = dv[cols].copy()
-        ds["data"] = ds["data"].dt.strftime("%d/%m/%Y")
-        ds["fat_bruto"] = ds["fat_bruto"].apply(R)
-        ds["chapa"] = ds["chapa"].apply(R)
-        ds.columns = ["MOTORISTA","CLIENTE","CONTRATO","DATA","FAT. BRUTO","CHAPA","DESTINO","STATUS"][:len(cols)]
+        # Se há um contrato em edição no session_state, mostra só ele
+        edit_id = st.session_state.get("edit_contrato_id", None)
+        edit_row = None
+        if edit_id:
+            match = dv[dv["id"] == edit_id]
+            if not match.empty:
+                edit_row = match.iloc[0]
 
-        if perm == "total":
-            sel_result = st.dataframe(
-                ds, use_container_width=True, hide_index=True,
-                on_select="rerun", selection_mode="single-row",
-                column_config={
-                    "MOTORISTA": st.column_config.TextColumn(width="medium"),
-                    "FAT. BRUTO": st.column_config.TextColumn(width="medium"),
-                    "STATUS": st.column_config.TextColumn(width="small"),
-                })
-            sel_rows = sel_result.selection.rows if sel_result else []
-        else:
-            st.dataframe(ds, use_container_width=True, hide_index=True)
-            sel_rows = []
+        if edit_row is not None:
+            # Botão voltar
+            if st.button("← Voltar para contratos"):
+                st.session_state.pop("edit_contrato_id", None)
+                st.rerun()
 
-        if sel_rows and perm == "total":
-            row = dv.iloc[sel_rows[0]]
-            st.markdown(f"**✏️ Editando: {row.get('contrato','')} — {row.get('motorista','')}**")
+            st.markdown(f"**✏️ Editando: {edit_row.get('contrato','')} — {edit_row.get('motorista','')}**")
+            row = edit_row
             with st.form("fedit"):
                 st.markdown("**Dados do Contrato**")
                 ea1, ea2, ea3 = st.columns(3)
@@ -1075,17 +1067,44 @@ elif aba == "contratos":
                         "adiantamento_pago": ea_pago, "obs": eobs
                     }
                     if sb_patch("contratos", f"id=eq.{row['id']}", payload):
-                        st.success("✅ Contrato atualizado!")
+                        st.session_state.pop("edit_contrato_id", None)
                         st.cache_data.clear()
+                        st.success("✅ Contrato atualizado!")
                         st.rerun()
                 if sc2.form_submit_button("🗑️ Excluir contrato", use_container_width=True):
                     if sb_delete("contratos", f"id=eq.{row['id']}"):
-                        st.success("Excluído!"); st.cache_data.clear(); st.rerun()
-            # CSV fora do form
-            csv_row = dv.iloc[[sel_rows[0]]].to_csv(index=False, sep=";", encoding="utf-8-sig")
+                        st.session_state.pop("edit_contrato_id", None)
+                        st.cache_data.clear()
+                        st.rerun()
+            csv_row = dv[dv["id"] == edit_id].to_csv(index=False, sep=";", encoding="utf-8-sig")
             st.download_button("📥 Exportar CSV deste contrato", csv_row,
                 f"contrato_{row.get('contrato','')}.csv", "text/csv", use_container_width=True)
+
         else:
+            # Tabela normal — clicar seleciona para edição
+            cols = [c for c in ["motorista","cliente","contrato","data","fat_bruto","chapa","destino","status"] if c in dv.columns]
+            ds = dv[cols].copy()
+            ds["data"] = ds["data"].dt.strftime("%d/%m/%Y")
+            ds["fat_bruto"] = ds["fat_bruto"].apply(R)
+            ds["chapa"] = ds["chapa"].apply(R)
+            ds.columns = ["MOTORISTA","CLIENTE","CONTRATO","DATA","FAT. BRUTO","CHAPA","DESTINO","STATUS"][:len(cols)]
+
+            if perm == "total":
+                sel_result = st.dataframe(
+                    ds, use_container_width=True, hide_index=True,
+                    on_select="rerun", selection_mode="single-row",
+                    column_config={
+                        "MOTORISTA": st.column_config.TextColumn(width="medium"),
+                        "FAT. BRUTO": st.column_config.TextColumn(width="medium"),
+                        "STATUS": st.column_config.TextColumn(width="small"),
+                    })
+                sel_rows = sel_result.selection.rows if sel_result else []
+                if sel_rows:
+                    st.session_state["edit_contrato_id"] = dv.iloc[sel_rows[0]]["id"]
+                    st.rerun()
+            else:
+                st.dataframe(ds, use_container_width=True, hide_index=True)
+
             csv = dv.to_csv(index=False, sep=";", encoding="utf-8-sig")
             st.download_button("📥 Exportar CSV", csv,
                 f"contratos_{periodo.replace('/','_')}.csv", "text/csv",
