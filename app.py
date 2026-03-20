@@ -860,36 +860,14 @@ elif aba == "novo":
 
     st.markdown("<h1 style='color:#111318;font-size:22px;font-weight:700;margin-bottom:2px'>Novo Contrato</h1><p style='color:#9CA3AF;font-size:13px;margin-top:0'>Cadastre um novo contrato de transporte</p>", unsafe_allow_html=True)
 
-    # CSS escuro para o expander da IA
-    st.markdown("""
-    <style>
-    [data-testid="stExpander"]:first-of-type > div:first-child {
-        background: #1A3A5C !important; border: 1px solid #2A5A8C !important; border-radius: 10px !important;
-    }
-    [data-testid="stExpander"]:first-of-type > div:first-child p,
-    [data-testid="stExpander"]:first-of-type > div:first-child span,
-    [data-testid="stExpander"]:first-of-type > div:first-child svg { color: white !important; fill: white !important; }
-    [data-testid="stExpander"]:first-of-type > div:last-child {
-        background: #0F2540 !important; border: 1px solid #2A5A8C !important;
-        border-top: none !important; border-radius: 0 0 10px 10px !important; padding: 20px !important;
-    }
-    [data-testid="stExpander"]:first-of-type > div:last-child p,
-    [data-testid="stExpander"]:first-of-type > div:last-child label,
-    [data-testid="stExpander"]:first-of-type > div:last-child span:not([class*="badge"]) { color: #B8CDE0 !important; }
-    [data-testid="stExpander"]:first-of-type input,
-    [data-testid="stExpander"]:first-of-type textarea,
-    [data-testid="stExpander"]:first-of-type [data-baseweb="select"] > div {
-        background: #1E4976 !important; border-color: #2A5A8C !important; color: white !important;
-    }
-    [data-testid="stExpander"]:first-of-type .stButton > button { background: #1A7FC1 !important; color: white !important; }
-    </style>
-    """, unsafe_allow_html=True)
+    if st.button("Novo Contrato", key="btn_toggle_ia"):
+        st.session_state["show_ia"] = not st.session_state.get("show_ia", False)
 
-    with st.expander("Novo Contrato", expanded=False):
+    if st.session_state.get("show_ia", False):
         if not ANTHROPIC_KEY:
             st.warning("⚠️ Configure `ANTHROPIC_KEY` nos Secrets do Streamlit para usar a leitura automática.")
         else:
-            st.markdown("<p style='color:#7AADCC;font-size:13px'>Envie uma foto ou PDF do contrato — a IA preenche os campos automaticamente.</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color:#6B7280;font-size:13px'>Envie uma foto ou PDF do contrato — a IA preenche os campos automaticamente.</p>", unsafe_allow_html=True)
         upl = st.file_uploader("Arquivo do contrato", type=["jpg","jpeg","png","webp","pdf"])
         if upl:
             col_a, col_b = st.columns([2,1])
@@ -900,8 +878,7 @@ elif aba == "novo":
                     st.info(f"📄 **{upl.name}** — PDF pronto para análise")
             with col_b:
                 st.markdown("<br>", unsafe_allow_html=True)
-                btn_ia = st.button("🤖  Analisar com IA", use_container_width=True, disabled=not ANTHROPIC_KEY, key="btn_ia_upload",
-                    help="Clique para analisar o contrato com inteligência artificial")
+                btn_ia = st.button("🤖  Analisar com IA", use_container_width=True, disabled=not ANTHROPIC_KEY, key="btn_ia_upload")
                 if btn_ia:
                     arquivo = upl.read()
                     if len(arquivo) > 5 * 1024 * 1024:
@@ -913,6 +890,7 @@ elif aba == "novo":
                             st.error(f"Erro: {erro}")
                         elif dados:
                             st.session_state["ia"] = dados
+                            st.session_state["show_ia"] = False
                             st.success("✅ Dados extraídos com sucesso!")
                             st.rerun()
 
