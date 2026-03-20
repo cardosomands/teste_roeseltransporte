@@ -990,41 +990,30 @@ elif aba == "novo":
     if ia:
         st.success("📋 Campos preenchidos pela IA — confira e salve.")
 
-    # ── Cadastrar novo motorista (antes do form) ───────────────────
-    with st.expander("➕ Cadastrar novo motorista"):
-        an1, an2, an3 = st.columns([3, 2, 1])
-        novo_nome_nc = an1.text_input("Nome (em maiúsculas)", placeholder="Ex: JOÃO SILVA", key="nc_novo_mot_nome").strip().upper()
-        tipo_nc      = an2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="nc_novo_mot_tipo")
-        an3.markdown("<br>", unsafe_allow_html=True)
-        if an3.button("✅ Adicionar", key="nc_btn_add_mot", use_container_width=True):
-            if not novo_nome_nc:
-                st.error("Digite o nome do motorista.")
-            elif novo_nome_nc in MOTORISTAS:
-                st.warning(f"'{novo_nome_nc}' já existe na lista.")
-            else:
-                st.session_state.motoristas_extra.append(novo_nome_nc)
-                if tipo_nc.startswith("Sem") and novo_nome_nc not in SEM:
-                    SEM.append(novo_nome_nc)
-                st.session_state["nc_mot_escolhido"] = novo_nome_nc
-                st.success(f"✅ **{novo_nome_nc}** adicionado! Agora selecione-o no formulário.")
-                st.rerun()
-
-    # Recalcula lista após possível adição
+    # Recalcula lista
     MOTORISTAS = sorted(set(_MOTORISTAS_BASE + st.session_state.motoristas_extra))
 
     with st.form("fnovo", clear_on_submit=True):
         st.markdown("**Dados do Contrato**")
         c1,c2,c3 = st.columns(3)
 
-        # Motorista — agora DENTRO do form
-        mi = MOTORISTAS.index(st.session_state.get("nc_mot_escolhido", MOTORISTAS[0])) \
-             if st.session_state.get("nc_mot_escolhido", "") in MOTORISTAS else \
-             (MOTORISTAS.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS else 0)
-        mot_final = c1.selectbox("Cadastrar motorista", MOTORISTAS, index=mi)
+        MOTORISTAS_OPT = MOTORISTAS + ["➕ Cadastrar motorista..."]
+        mi = MOTORISTAS_OPT.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS_OPT else 0
+        mot_sel   = c1.selectbox("Motorista *", MOTORISTAS_OPT, index=mi)
 
         ci = CLIENTES.index(ia.get("cliente","")) if ia.get("cliente","") in CLIENTES else 0
         cli   = c2.selectbox("Cliente *", CLIENTES, index=ci)
         placa = c3.text_input("Placa *", ia.get("placa","")).upper()
+
+        # Se escolheu cadastrar novo, mostra campos extras
+        if mot_sel == "➕ Cadastrar motorista...":
+            nc1, nc2 = st.columns([3, 2])
+            novo_mot_nome = nc1.text_input("Nome do novo motorista", placeholder="Ex: JOÃO SILVA", key="fnovo_novo_mot")
+            novo_mot_tipo = nc2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="fnovo_novo_tipo")
+            mot_final = novo_mot_nome.strip().upper() if novo_mot_nome else ""
+        else:
+            mot_final = mot_sel
+
         c4,c5,c6 = st.columns(3)
         cont  = c4.text_input("Nº Contrato *", ia.get("contrato",""))
         frota = c5.text_input("Frota", ia.get("frota",""))
@@ -1054,9 +1043,16 @@ elif aba == "novo":
             </div>""", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         if st.form_submit_button("Salvar Contrato", use_container_width=True):
-            if not cont or not fat_v:
+            if mot_sel == "➕ Cadastrar motorista..." and not mot_final:
+                st.error("Digite o nome do novo motorista.")
+            elif not cont or not fat_v:
                 st.error("Preencha: Nº Contrato e Faturamento Bruto.")
             else:
+                # Salva novo motorista na sessão se for novo
+                if mot_sel == "➕ Cadastrar motorista..." and mot_final not in MOTORISTAS:
+                    st.session_state.motoristas_extra.append(mot_final)
+                    if "novo_mot_tipo" in st.session_state and st.session_state.fnovo_novo_tipo.startswith("Sem"):
+                        SEM.append(mot_final)
                 novo = {"id": str(uuid.uuid4()), "motorista": mot_final, "cliente": cli, "placa": placa,
                         "frota": frota, "contrato": cont, "data": str(data_v), "fat_bruto": fat_v,
                         "chapa": chapa_v, "destino": dest, "qtd_veiculos": int(qtd),
