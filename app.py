@@ -885,8 +885,40 @@ elif aba == "novo":
                 else:
                     st.info(f"📄 **{upl.name}** — PDF pronto para análise")
             with col_b:
-                st.markdown("<br><br>", unsafe_allow_html=True)
-                if st.button("🤖 Analisar com IA", use_container_width=True, disabled=not ANTHROPIC_KEY):
+                st.markdown("""
+                <style>
+                div[data-testid="stButton"] button[kind="primary"]:not([data-baseweb]) {
+                    background: linear-gradient(135deg,#1A3A5C 0%,#2D6BE4 100%) !important;
+                    box-shadow: 0 4px 16px rgba(45,107,228,0.35) !important;
+                }
+                .btn-ia > div > button {
+                    background: linear-gradient(135deg,#1A3A5C 0%,#2D6BE4 100%) !important;
+                    color: white !important;
+                    border: none !important;
+                    border-radius: 10px !important;
+                    font-weight: 700 !important;
+                    font-size: 13px !important;
+                    letter-spacing: 0.03em !important;
+                    padding: 11px 16px !important;
+                    box-shadow: 0 4px 16px rgba(45,107,228,0.35) !important;
+                    transition: all 0.18s !important;
+                }
+                .btn-ia > div > button:hover {
+                    transform: translateY(-1px) !important;
+                    box-shadow: 0 7px 22px rgba(45,107,228,0.48) !important;
+                }
+                </style>
+                <br>
+                <div style='background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:14px 16px;margin-bottom:12px;'>
+                    <div style='font-size:11px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px'>✨ Leitura automática</div>
+                    <div style='font-size:12px;color:#3B82F6;line-height:1.4'>A IA extrai os dados do contrato em segundos.</div>
+                </div>
+                """, unsafe_allow_html=True)
+                with st.container():
+                    st.markdown('<div class="btn-ia">', unsafe_allow_html=True)
+                    btn_ia = st.button("🤖  Analisar com IA", use_container_width=True, disabled=not ANTHROPIC_KEY)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                if btn_ia:
                     arquivo = upl.read()
                     if len(arquivo) > 5 * 1024 * 1024:
                         st.error("Arquivo muito grande (máx. 5 MB).")
