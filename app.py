@@ -318,12 +318,17 @@ p, .stCaption { color: #6B7280 !important; }
 [data-testid="stSidebarHeader"] { display: none !important; }
 section[data-testid="stSidebar"] > div:first-child > div:first-child { padding-top: 0 !important; }
 
-/* Esconder ícone _arrow_right dos expanders */
-[data-testid="stExpander"] summary span[data-testid="stExpanderToggleIcon"],
-[data-testid="stExpander"] summary svg,
-details summary svg { display: none !important; }
-details summary::marker { display: none !important; content: "" !important; }
-details summary { list-style: none !important; }
+/* Esconder _arrow_right dos expanders - ícone Material Icons */
+[data-testid="stExpanderToggleIcon"] { display: none !important; }
+[data-testid="stExpander"] details summary svg { display: none !important; }
+/* Span com texto _arrow_right (ligatura Material Icons não carregada) */
+[data-testid="stExpander"] details summary span:last-child { display: none !important; }
+.streamlit-expanderHeader span:last-child { display: none !important; }
+/* Esconde qualquer span filho do summary que contenha _arrow */
+details > summary > div > div > span:last-of-type { display: none !important; }
+/* Target direto pelo material icons span */
+span.material-symbols-rounded { display: none !important; }
+span.material-icons { display: none !important; }
 hr { border-color: #E2E8F0 !important; }
 
 /* Conteúdo principal */
