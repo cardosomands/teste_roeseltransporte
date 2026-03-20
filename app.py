@@ -596,7 +596,7 @@ with st.sidebar:
         "📊  Visão Geral": "dashboard",
         "➕  Novo Contrato": "novo",
         "📋  Contratos": "contratos",
-        "👤  Por Motorista": "motorista",
+        "👤  Motorista": "motorista",
         "💳  Comissões": "comissoes",
         "🏆  Prêmios": "premios",
     }
@@ -1112,7 +1112,7 @@ elif aba == "contratos":
 # POR MOTORISTA
 # ══════════════════════════════════════════════════════════════════
 elif aba == "motorista":
-    st.markdown("<h1 style='color:#1C1C2E'>👤 Por Motorista</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#1C1C2E'>👤 Motorista</h1>", unsafe_allow_html=True)
 
     # ── Cadastrar novo motorista ───────────────────────────────────
     with st.expander("➕ Cadastrar novo motorista", expanded=False):
