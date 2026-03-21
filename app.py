@@ -1142,7 +1142,6 @@ elif aba == "motorista":
         st.session_state["show_cad_mot"] = not st.session_state.get("show_cad_mot", False)
 
     if st.session_state.get("show_cad_mot", False):
-        st.markdown("**Cadastrar novo motorista**")
         am1, am2 = st.columns([3, 2])
         novo_mot_m = am1.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA", key="aba_mot_novo_nome").strip().upper()
         tipo_mot_m = am2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="aba_mot_novo_tipo")
