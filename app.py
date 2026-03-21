@@ -1155,41 +1155,48 @@ elif aba == "contratos":
 # POR MOTORISTA
 # ══════════════════════════════════════════════════════════════════
 elif aba == "motorista":
-    top1, top2 = st.columns([3, 1])
-    mot_edit_sel = top1.selectbox("Selecionar motorista para editar", [""] + MOTORISTAS,
-        key="edit_mot_sel", format_func=lambda x: "Selecione..." if x == "" else x)
-    top2.markdown("<br>", unsafe_allow_html=True)
-    if top2.button("Cadastrar motorista", key="btn_toggle_cad_mot", use_container_width=True):
-        st.session_state["show_cad_mot"] = not st.session_state.get("show_cad_mot", False)
+    mot_edit_sel = st.session_state.get("mot_edit_atual", "")
 
-    if st.session_state.get("show_cad_mot", False):
-        am1, am2 = st.columns([3, 2])
-        novo_mot_m = am1.text_input("Nome", placeholder="Ex: JOÃO SILVA", key="aba_mot_novo_nome").strip().upper()
-        tipo_mot_m = am2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="aba_mot_novo_tipo")
-        bm1, bm2 = st.columns(2)
-        novo_cpf = bm1.text_input("CPF", placeholder="000.000.000-00", key="aba_mot_cpf")
-        novo_rg  = bm2.text_input("RG", placeholder="MG-00.000.000", key="aba_mot_rg")
-        if st.button("Salvar motorista", key="aba_mot_btn_add"):
-            if not novo_mot_m:
-                st.error("Digite o nome.")
-            elif novo_mot_m in MOTORISTAS:
-                st.warning(f"\'{novo_mot_m}\' já existe.")
-            else:
-                st.session_state.motoristas_extra.append(novo_mot_m)
-                st.session_state.motoristas_dados[novo_mot_m] = {
-                    "cpf": novo_cpf, "rg": novo_rg,
-                    "tipo": "Sem adiantamento" if tipo_mot_m.startswith("Sem") else "Com adiantamento"
-                }
-                if tipo_mot_m.startswith("Sem") and novo_mot_m not in SEM:
-                    SEM.append(novo_mot_m)
-                st.session_state["show_cad_mot"] = False
-                st.success(f"✅ **{novo_mot_m}** cadastrado!")
-                st.rerun()
-        st.markdown("---")
+    if not mot_edit_sel:
+        top1, top2 = st.columns([3, 1])
+        escolhido = top1.selectbox("Selecionar motorista para editar", [""] + MOTORISTAS,
+            key="edit_mot_sel", format_func=lambda x: "Selecione..." if x == "" else x)
+        top2.markdown("<br>", unsafe_allow_html=True)
+        if top2.button("Cadastrar motorista", key="btn_toggle_cad_mot", use_container_width=True):
+            st.session_state["show_cad_mot"] = not st.session_state.get("show_cad_mot", False)
 
-    if mot_edit_sel:
+        if st.session_state.get("show_cad_mot", False):
+            am1, am2 = st.columns([3, 2])
+            novo_mot_m = am1.text_input("Nome", placeholder="Ex: JOAO SILVA", key="aba_mot_novo_nome").strip().upper()
+            tipo_mot_m = am2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="aba_mot_novo_tipo")
+            bm1, bm2 = st.columns(2)
+            novo_cpf = bm1.text_input("CPF", placeholder="000.000.000-00", key="aba_mot_cpf")
+            novo_rg  = bm2.text_input("RG", placeholder="MG-00.000.000", key="aba_mot_rg")
+            if st.button("Salvar motorista", key="aba_mot_btn_add"):
+                if not novo_mot_m:
+                    st.error("Digite o nome.")
+                elif novo_mot_m in MOTORISTAS:
+                    st.warning(f"ja existe.")
+                else:
+                    st.session_state.motoristas_extra.append(novo_mot_m)
+                    st.session_state.motoristas_dados[novo_mot_m] = {
+                        "cpf": novo_cpf, "rg": novo_rg,
+                        "tipo": "Sem adiantamento" if tipo_mot_m.startswith("Sem") else "Com adiantamento"
+                    }
+                    if tipo_mot_m.startswith("Sem") and novo_mot_m not in SEM:
+                        SEM.append(novo_mot_m)
+                    st.session_state["show_cad_mot"] = False
+                    st.success(f"Cadastrado!")
+                    st.rerun()
+
+        if escolhido:
+            st.session_state["mot_edit_atual"] = escolhido
+            st.rerun()
+
+    else:
         dados_atual = st.session_state.motoristas_dados.get(mot_edit_sel, {})
         tipo_atual  = dados_atual.get("tipo", "Com adiantamento")
+        st.markdown(f"**Editando: {mot_edit_sel}**")
         em1, em2 = st.columns([3, 2])
         edit_nome = em1.text_input("Nome", value=mot_edit_sel, key="em_nome").strip().upper()
         edit_tipo = em2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"],
@@ -1197,7 +1204,8 @@ elif aba == "motorista":
         fm1, fm2 = st.columns(2)
         edit_cpf = fm1.text_input("CPF", value=dados_atual.get("cpf",""), key="em_cpf")
         edit_rg  = fm2.text_input("RG",  value=dados_atual.get("rg",""),  key="em_rg")
-        if st.button("💾 Salvar edição", key="btn_salvar_edit_mot"):
+        sc1, sc2 = st.columns(2)
+        if sc1.button("Salvar", key="btn_salvar_edit_mot", use_container_width=True):
             novo_dados = {"cpf": edit_cpf, "rg": edit_rg,
                 "tipo": "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"}
             st.session_state.motoristas_dados[edit_nome] = novo_dados
@@ -1210,7 +1218,11 @@ elif aba == "motorista":
                     st.session_state.motoristas_extra[st.session_state.motoristas_extra.index(mot_edit_sel)] = edit_nome
                 st.session_state.motoristas_dados.pop(mot_edit_sel, None)
                 st.session_state.motoristas_dados[edit_nome] = novo_dados
-            st.success(f"✅ **{edit_nome}** atualizado!")
+            st.session_state.pop("mot_edit_atual", None)
+            st.success("Atualizado!")
+            st.rerun()
+        if sc2.button("Voltar", key="btn_voltar_edit_mot", use_container_width=True):
+            st.session_state.pop("mot_edit_atual", None)
             st.rerun()
 
 elif aba == "comissoes":
