@@ -1192,16 +1192,12 @@ elif aba == "motorista":
 
     # ── Editar motorista ─────────────────────────────────────────
     if st.session_state.get("show_edit_mot", False):
-        busca_mot = st.text_input("🔍 Buscar motorista", placeholder="Digite o nome...", key="busca_edit_mot").strip().upper()
-        lista_filtrada = [m for m in MOTORISTAS if busca_mot in m] if busca_mot else MOTORISTAS
+        busca_mot = st.text_input("🔍 Buscar motorista", placeholder="Digite uma letra ou nome...", key="busca_edit_mot").strip().upper()
+        lista_filtrada = [m for m in MOTORISTAS if busca_mot in m] if busca_mot else []
 
-        # Auto-seleciona se só tem um resultado
-        auto_sel = lista_filtrada[0] if len(lista_filtrada) == 1 else ""
-
-        mot_edit_sel = st.selectbox("Selecione para editar",
-            [""] + lista_filtrada, key="edit_mot_sel",
-            index=1 if auto_sel else 0,
-            format_func=lambda x: "Selecione..." if x == "" else x)
+        mot_edit_sel = ""
+        if lista_filtrada:
+            mot_edit_sel = st.selectbox("", lista_filtrada, key="edit_mot_sel")
 
         if mot_edit_sel:
             dados_atual = st.session_state.motoristas_dados.get(mot_edit_sel, {})
