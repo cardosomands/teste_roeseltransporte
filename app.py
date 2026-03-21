@@ -1142,25 +1142,22 @@ elif aba == "motorista":
         st.session_state["show_cad_mot"] = not st.session_state.get("show_cad_mot", False)
 
     if st.session_state.get("show_cad_mot", False):
-        with st.container():
-            st.markdown("<div style='background:white;border:1px solid #E5E7EB;border-radius:12px;padding:20px;margin-bottom:16px'>", unsafe_allow_html=True)
-            st.markdown("**Cadastrar novo motorista**")
-            am1, am2 = st.columns([3, 2])
-            novo_mot_m = am1.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA", key="aba_mot_novo_nome").strip().upper()
-            tipo_mot_m = am2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="aba_mot_novo_tipo")
-            if st.button("Salvar motorista", key="aba_mot_btn_add"):
-                if not novo_mot_m:
-                    st.error("Digite o nome do motorista.")
-                elif novo_mot_m in MOTORISTAS:
-                    st.warning(f"'{novo_mot_m}' já existe.")
-                else:
-                    st.session_state.motoristas_extra.append(novo_mot_m)
-                    if tipo_mot_m.startswith("Sem") and novo_mot_m not in SEM:
-                        SEM.append(novo_mot_m)
-                    st.session_state["show_cad_mot"] = False
-                    st.success(f"✅ **{novo_mot_m}** cadastrado!")
-                    st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("**Cadastrar novo motorista**")
+        am1, am2 = st.columns([3, 2])
+        novo_mot_m = am1.text_input("Nome do motorista", placeholder="Ex: JOÃO SILVA", key="aba_mot_novo_nome").strip().upper()
+        tipo_mot_m = am2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="aba_mot_novo_tipo")
+        if st.button("Salvar motorista", key="aba_mot_btn_add"):
+            if not novo_mot_m:
+                st.error("Digite o nome do motorista.")
+            elif novo_mot_m in MOTORISTAS:
+                st.warning(f"'{novo_mot_m}' já existe.")
+            else:
+                st.session_state.motoristas_extra.append(novo_mot_m)
+                if tipo_mot_m.startswith("Sem") and novo_mot_m not in SEM:
+                    SEM.append(novo_mot_m)
+                st.session_state["show_cad_mot"] = False
+                st.success(f"✅ **{novo_mot_m}** cadastrado!")
+                st.rerun()
 
     anos_banco_m = set(df_all["data"].dt.year.dropna().unique().astype(int).tolist()) if not df_all.empty else set()
     anos_list_m = [0] + sorted(anos_banco_m | set(range(2024, 2031)), reverse=True)
