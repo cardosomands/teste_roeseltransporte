@@ -1155,14 +1155,16 @@ elif aba == "contratos":
 # POR MOTORISTA
 # ══════════════════════════════════════════════════════════════════
 elif aba == "motorista":
-    # ── Botões topo ───────────────────────────────────────────────
-    btn_col1, btn_col2 = st.columns(2)
-    if btn_col1.button("Cadastrar motorista", key="btn_toggle_cad_mot"):
+    # ── Topo: busca à esquerda, cadastrar à direita ───────────────
+    top1, top2 = st.columns([3, 1])
+
+    mot_edit_sel = top1.selectbox("Motorista", [""] + MOTORISTAS,
+        key="edit_mot_sel",
+        format_func=lambda x: "Selecione..." if x == "" else x)
+
+    top2.markdown("<br>", unsafe_allow_html=True)
+    if top2.button("Cadastrar motorista", key="btn_toggle_cad_mot", use_container_width=True):
         st.session_state["show_cad_mot"] = not st.session_state.get("show_cad_mot", False)
-        st.session_state.pop("edit_mot_nome", None)
-    if btn_col2.button("Editar motorista", key="btn_toggle_edit_mot"):
-        st.session_state["show_edit_mot"] = not st.session_state.get("show_edit_mot", False)
-        st.session_state.pop("show_cad_mot", None)
 
     # ── Cadastrar motorista ───────────────────────────────────────
     if st.session_state.get("show_cad_mot", False):
@@ -1190,43 +1192,36 @@ elif aba == "motorista":
                 st.rerun()
         st.markdown("---")
 
-    # ── Editar motorista ─────────────────────────────────────────
-    if st.session_state.get("show_edit_mot", False):
-        mot_edit_sel = st.selectbox("Motorista", [""] + MOTORISTAS,
-            key="edit_mot_sel",
-            format_func=lambda x: "Selecione..." if x == "" else x)
-
-        if mot_edit_sel:
-            dados_atual = st.session_state.motoristas_dados.get(mot_edit_sel, {})
-            tipo_atual  = dados_atual.get("tipo", "Com adiantamento")
-            em1, em2 = st.columns([3, 2])
-            edit_nome = em1.text_input("Nome", value=mot_edit_sel, key="em_nome").strip().upper()
-            tipo_opts = ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"]
-            tipo_idx  = 1 if tipo_atual.startswith("Sem") else 0
-            edit_tipo = em2.selectbox("Tipo", tipo_opts, index=tipo_idx, key="em_tipo")
-            fm1, fm2 = st.columns(2)
-            edit_cpf = fm1.text_input("CPF", value=dados_atual.get("cpf",""), key="em_cpf")
-            edit_rg  = fm2.text_input("RG",  value=dados_atual.get("rg",""),  key="em_rg")
-            if st.button("💾 Salvar edição", key="btn_salvar_edit_mot"):
-                novo_dados = {
-                    "cpf": edit_cpf, "rg": edit_rg,
-                    "tipo": "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
-                }
+    # ── Editar motorista selecionado ──────────────────────────────
+    if mot_edit_sel:
+        dados_atual = st.session_state.motoristas_dados.get(mot_edit_sel, {})
+        tipo_atual  = dados_atual.get("tipo", "Com adiantamento")
+        em1, em2 = st.columns([3, 2])
+        edit_nome = em1.text_input("Nome", value=mot_edit_sel, key="em_nome").strip().upper()
+        tipo_opts = ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"]
+        tipo_idx  = 1 if tipo_atual.startswith("Sem") else 0
+        edit_tipo = em2.selectbox("Tipo", tipo_opts, index=tipo_idx, key="em_tipo")
+        fm1, fm2 = st.columns(2)
+        edit_cpf = fm1.text_input("CPF", value=dados_atual.get("cpf",""), key="em_cpf")
+        edit_rg  = fm2.text_input("RG",  value=dados_atual.get("rg",""),  key="em_rg")
+        if st.button("💾 Salvar edição", key="btn_salvar_edit_mot"):
+            novo_dados = {
+                "cpf": edit_cpf, "rg": edit_rg,
+                "tipo": "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
+            }
+            st.session_state.motoristas_dados[edit_nome] = novo_dados
+            if edit_tipo.startswith("Sem"):
+                if edit_nome not in SEM: SEM.append(edit_nome)
+            else:
+                if edit_nome in SEM: SEM.remove(edit_nome)
+            if edit_nome != mot_edit_sel:
+                if mot_edit_sel in st.session_state.motoristas_extra:
+                    idx = st.session_state.motoristas_extra.index(mot_edit_sel)
+                    st.session_state.motoristas_extra[idx] = edit_nome
+                st.session_state.motoristas_dados.pop(mot_edit_sel, None)
                 st.session_state.motoristas_dados[edit_nome] = novo_dados
-                if edit_tipo.startswith("Sem"):
-                    if edit_nome not in SEM: SEM.append(edit_nome)
-                else:
-                    if edit_nome in SEM: SEM.remove(edit_nome)
-                if edit_nome != mot_edit_sel:
-                    if mot_edit_sel in st.session_state.motoristas_extra:
-                        idx = st.session_state.motoristas_extra.index(mot_edit_sel)
-                        st.session_state.motoristas_extra[idx] = edit_nome
-                    st.session_state.motoristas_dados.pop(mot_edit_sel, None)
-                    st.session_state.motoristas_dados[edit_nome] = novo_dados
-                st.session_state["show_edit_mot"] = False
-                st.success(f"✅ **{edit_nome}** atualizado!")
-                st.rerun()
-        st.markdown("---")
+            st.success(f"✅ **{edit_nome}** atualizado!")
+            st.rerun()
 
         if mot_edit_sel:
             dados_atual = st.session_state.motoristas_dados.get(mot_edit_sel, {})
