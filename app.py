@@ -1193,11 +1193,59 @@ elif aba == "motorista":
     # ── Editar motorista ─────────────────────────────────────────
     if st.session_state.get("show_edit_mot", False):
         busca_mot = st.text_input("🔍 Buscar motorista", placeholder="Digite uma letra ou nome...", key="busca_edit_mot").strip().upper()
-        lista_filtrada = [m for m in MOTORISTAS if busca_mot in m] if busca_mot else []
 
-        mot_edit_sel = ""
-        if lista_filtrada:
-            mot_edit_sel = st.selectbox("", lista_filtrada, key="edit_mot_sel")
+        # Se há um motorista selecionado para editar
+        mot_edit_sel = st.session_state.get("mot_edit_selecionado", "")
+
+        # Mostra lista de resultados como botões clicáveis
+        if busca_mot and not mot_edit_sel:
+            lista_filtrada = [m for m in MOTORISTAS if busca_mot in m]
+            if lista_filtrada:
+                for m in lista_filtrada:
+                    if st.button(f"👤 {m}", key=f"sel_mot_{m}", use_container_width=True):
+                        st.session_state["mot_edit_selecionado"] = m
+                        st.rerun()
+            else:
+                st.caption("Nenhum motorista encontrado.")
+
+        # Formulário de edição após selecionar
+        if mot_edit_sel:
+            dados_atual = st.session_state.motoristas_dados.get(mot_edit_sel, {})
+            tipo_atual  = dados_atual.get("tipo", "Com adiantamento")
+            st.markdown(f"**Editando: {mot_edit_sel}**")
+            em1, em2 = st.columns([3, 2])
+            edit_nome = em1.text_input("Nome", value=mot_edit_sel, key="em_nome").strip().upper()
+            tipo_opts = ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"]
+            tipo_idx  = 1 if tipo_atual.startswith("Sem") else 0
+            edit_tipo = em2.selectbox("Tipo", tipo_opts, index=tipo_idx, key="em_tipo")
+            fm1, fm2 = st.columns(2)
+            edit_cpf = fm1.text_input("CPF", value=dados_atual.get("cpf",""), key="em_cpf")
+            edit_rg  = fm2.text_input("RG",  value=dados_atual.get("rg",""),  key="em_rg")
+            bc1, bc2 = st.columns(2)
+            if bc1.button("💾 Salvar edição", key="btn_salvar_edit_mot", use_container_width=True):
+                novo_dados = {
+                    "cpf": edit_cpf, "rg": edit_rg,
+                    "tipo": "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
+                }
+                st.session_state.motoristas_dados[edit_nome] = novo_dados
+                if edit_tipo.startswith("Sem"):
+                    if edit_nome not in SEM: SEM.append(edit_nome)
+                else:
+                    if edit_nome in SEM: SEM.remove(edit_nome)
+                if edit_nome != mot_edit_sel:
+                    if mot_edit_sel in st.session_state.motoristas_extra:
+                        idx = st.session_state.motoristas_extra.index(mot_edit_sel)
+                        st.session_state.motoristas_extra[idx] = edit_nome
+                    st.session_state.motoristas_dados.pop(mot_edit_sel, None)
+                    st.session_state.motoristas_dados[edit_nome] = novo_dados
+                st.session_state.pop("mot_edit_selecionado", None)
+                st.session_state["show_edit_mot"] = False
+                st.success(f"✅ **{edit_nome}** atualizado!")
+                st.rerun()
+            if bc2.button("← Voltar", key="btn_voltar_edit_mot", use_container_width=True):
+                st.session_state.pop("mot_edit_selecionado", None)
+                st.rerun()
+        st.markdown("---")
 
         if mot_edit_sel:
             dados_atual = st.session_state.motoristas_dados.get(mot_edit_sel, {})
