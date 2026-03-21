@@ -1192,9 +1192,13 @@ elif aba == "motorista":
 
     # ── Editar motorista ─────────────────────────────────────────
     if st.session_state.get("show_edit_mot", False):
-        mot_edit_sel = st.selectbox("Selecione o motorista para editar",
-            [""] + MOTORISTAS, key="edit_mot_sel",
+        busca_mot = st.text_input("🔍 Buscar motorista", placeholder="Digite o nome...", key="busca_edit_mot").strip().upper()
+        lista_filtrada = [m for m in MOTORISTAS if busca_mot in m] if busca_mot else MOTORISTAS
+
+        mot_edit_sel = st.selectbox("Selecione para editar",
+            [""] + lista_filtrada, key="edit_mot_sel",
             format_func=lambda x: "Selecione..." if x == "" else x)
+
         if mot_edit_sel:
             dados_atual = st.session_state.motoristas_dados.get(mot_edit_sel, {})
             tipo_atual  = dados_atual.get("tipo", "Com adiantamento")
@@ -1207,23 +1211,20 @@ elif aba == "motorista":
             edit_cpf = fm1.text_input("CPF", value=dados_atual.get("cpf",""), key="em_cpf")
             edit_rg  = fm2.text_input("RG",  value=dados_atual.get("rg",""),  key="em_rg")
             if st.button("Salvar edição", key="btn_salvar_edit_mot"):
-                # Atualiza dados
                 novo_dados = {
                     "cpf": edit_cpf, "rg": edit_rg,
                     "tipo": "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
                 }
                 st.session_state.motoristas_dados[edit_nome] = novo_dados
-                # Atualiza SEM
                 if edit_tipo.startswith("Sem"):
                     if edit_nome not in SEM: SEM.append(edit_nome)
                 else:
                     if edit_nome in SEM: SEM.remove(edit_nome)
-                # Atualiza nome se mudou
                 if edit_nome != mot_edit_sel:
                     if mot_edit_sel in st.session_state.motoristas_extra:
                         idx = st.session_state.motoristas_extra.index(mot_edit_sel)
                         st.session_state.motoristas_extra[idx] = edit_nome
-                    old_dados = st.session_state.motoristas_dados.pop(mot_edit_sel, {})
+                    st.session_state.motoristas_dados.pop(mot_edit_sel, None)
                     st.session_state.motoristas_dados[edit_nome] = novo_dados
                 st.session_state["show_edit_mot"] = False
                 st.success(f"✅ **{edit_nome}** atualizado!")
