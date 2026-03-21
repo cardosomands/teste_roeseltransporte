@@ -924,21 +924,30 @@ elif aba == "novo":
         st.markdown("**Dados do Contrato**")
         c1,c2,c3 = st.columns(3)
 
-        mi = MOTORISTAS.index(ia.get("motorista","")) if ia.get("motorista","") in MOTORISTAS else 0
-        mot_final = c1.selectbox("Motorista *", MOTORISTAS, index=mi)
+        MOTS_OPT = [""] + MOTORISTAS
+        mi = MOTS_OPT.index(ia.get("motorista","")) if ia.get("motorista","") in MOTS_OPT else 0
+        mot_final = c1.selectbox("Motorista *", MOTS_OPT, index=mi, format_func=lambda x: "Selecione..." if x == "" else x)
 
-        ci = CLIENTES.index(ia.get("cliente","")) if ia.get("cliente","") in CLIENTES else 0
-        cli   = c2.selectbox("Cliente *", CLIENTES, index=ci)
+        CLIENTES_OPT = [""] + CLIENTES
+        ci = CLIENTES_OPT.index(ia.get("cliente","")) if ia.get("cliente","") in CLIENTES_OPT else 0
+        cli   = c2.selectbox("Cliente *", CLIENTES_OPT, index=ci, format_func=lambda x: "Selecione..." if x == "" else x)
         placa = c3.text_input("Placa *", ia.get("placa","")).upper()
 
         c4,c5,c6 = st.columns(3)
         cont  = c4.text_input("Nº Contrato *", ia.get("contrato",""))
         frota = c5.text_input("Frota", ia.get("frota",""))
-        dia   = datetime.now()
+        # Data em texto DD/MM/AAAA
+        ia_data_str = ""
         if ia.get("data"):
-            try: dia = datetime.strptime(ia["data"], "%d/%m/%Y")
-            except: pass
-        data_v = c6.date_input("Data *", dia)
+            try:
+                ia_data_str = datetime.strptime(ia["data"], "%d/%m/%Y").strftime("%d/%m/%Y")
+            except: ia_data_str = ia.get("data","")
+        data_str = c6.text_input("Data * (DD/MM/AAAA)", value=ia_data_str, placeholder="Ex: 21/03/2026")
+        try:
+            data_v = datetime.strptime(data_str.strip(), "%d/%m/%Y").date() if data_str.strip() else datetime.now().date()
+        except:
+            data_v = datetime.now().date()
+
         st.markdown("**Valores**")
         c7,c8,c9 = st.columns(3)
         fat_v   = c7.number_input("Fat. Bruto (R$) *", float(ia.get("fat_bruto",0)), step=100.0, format="%.2f")
@@ -948,9 +957,15 @@ elif aba == "novo":
         c10,c11,c11b = st.columns(3)
         orig   = c10.text_input("Origem", ia.get("origem","")).upper()
         dest   = c11.text_input("Destino", ia.get("destino","")).upper()
-        sts    = c11b.selectbox("Status", STATUS)
+        STATUS_OPT = [""] + STATUS
+        sts_sel = c11b.selectbox("Status", STATUS_OPT, index=0, format_func=lambda x: "Selecione..." if x == "" else x)
+        sts = sts_sel if sts_sel else "ABERTO"
         c12,c13 = st.columns(2)
-        dt_pag = c12.date_input("Dt. Pagamento", value=None)
+        dt_pag_str = c12.text_input("Dt. Pagamento (DD/MM/AAAA)", placeholder="Ex: 21/03/2026")
+        try:
+            dt_pag = datetime.strptime(dt_pag_str.strip(), "%d/%m/%Y").date() if dt_pag_str.strip() else None
+        except:
+            dt_pag = None
         adpago = c13.checkbox("Adiantamento Pago?")
         obs    = st.text_area("Observação", "", height=70)
         if fat_v > 0:
@@ -961,8 +976,8 @@ elif aba == "novo":
             </div>""", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         if st.form_submit_button("Salvar Contrato", use_container_width=True):
-            if not mot_final or not cont or not fat_v:
-                st.error("Preencha: Motorista, Nº Contrato e Faturamento Bruto.")
+            if not mot_final or not cli or not cont or not fat_v:
+                st.error("Preencha: Motorista, Cliente, Nº Contrato e Faturamento Bruto.")
             else:
                 novo = {"id": str(uuid.uuid4()), "motorista": mot_final, "cliente": cli, "placa": placa,
                         "frota": frota, "contrato": cont, "data": str(data_v), "fat_bruto": fat_v,
