@@ -1192,27 +1192,13 @@ elif aba == "motorista":
 
     # ── Editar motorista ─────────────────────────────────────────
     if st.session_state.get("show_edit_mot", False):
-        busca_mot = st.text_input("🔍 Buscar motorista", placeholder="Digite uma letra ou nome...", key="busca_edit_mot").strip().upper()
+        mot_edit_sel = st.selectbox("Motorista", [""] + MOTORISTAS,
+            key="edit_mot_sel",
+            format_func=lambda x: "Selecione..." if x == "" else x)
 
-        # Se há um motorista selecionado para editar
-        mot_edit_sel = st.session_state.get("mot_edit_selecionado", "")
-
-        # Mostra lista de resultados como botões clicáveis
-        if busca_mot and not mot_edit_sel:
-            lista_filtrada = [m for m in MOTORISTAS if busca_mot in m]
-            if lista_filtrada:
-                for m in lista_filtrada:
-                    if st.button(f"👤 {m}", key=f"sel_mot_{m}", use_container_width=True):
-                        st.session_state["mot_edit_selecionado"] = m
-                        st.rerun()
-            else:
-                st.caption("Nenhum motorista encontrado.")
-
-        # Formulário de edição após selecionar
         if mot_edit_sel:
             dados_atual = st.session_state.motoristas_dados.get(mot_edit_sel, {})
             tipo_atual  = dados_atual.get("tipo", "Com adiantamento")
-            st.markdown(f"**Editando: {mot_edit_sel}**")
             em1, em2 = st.columns([3, 2])
             edit_nome = em1.text_input("Nome", value=mot_edit_sel, key="em_nome").strip().upper()
             tipo_opts = ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"]
@@ -1221,8 +1207,7 @@ elif aba == "motorista":
             fm1, fm2 = st.columns(2)
             edit_cpf = fm1.text_input("CPF", value=dados_atual.get("cpf",""), key="em_cpf")
             edit_rg  = fm2.text_input("RG",  value=dados_atual.get("rg",""),  key="em_rg")
-            bc1, bc2 = st.columns(2)
-            if bc1.button("💾 Salvar edição", key="btn_salvar_edit_mot", use_container_width=True):
+            if st.button("💾 Salvar edição", key="btn_salvar_edit_mot"):
                 novo_dados = {
                     "cpf": edit_cpf, "rg": edit_rg,
                     "tipo": "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
@@ -1238,12 +1223,8 @@ elif aba == "motorista":
                         st.session_state.motoristas_extra[idx] = edit_nome
                     st.session_state.motoristas_dados.pop(mot_edit_sel, None)
                     st.session_state.motoristas_dados[edit_nome] = novo_dados
-                st.session_state.pop("mot_edit_selecionado", None)
                 st.session_state["show_edit_mot"] = False
                 st.success(f"✅ **{edit_nome}** atualizado!")
-                st.rerun()
-            if bc2.button("← Voltar", key="btn_voltar_edit_mot", use_container_width=True):
-                st.session_state.pop("mot_edit_selecionado", None)
                 st.rerun()
         st.markdown("---")
 
