@@ -1195,8 +1195,12 @@ elif aba == "motorista":
         busca_mot = st.text_input("🔍 Buscar motorista", placeholder="Digite o nome...", key="busca_edit_mot").strip().upper()
         lista_filtrada = [m for m in MOTORISTAS if busca_mot in m] if busca_mot else MOTORISTAS
 
+        # Auto-seleciona se só tem um resultado
+        auto_sel = lista_filtrada[0] if len(lista_filtrada) == 1 else ""
+
         mot_edit_sel = st.selectbox("Selecione para editar",
             [""] + lista_filtrada, key="edit_mot_sel",
+            index=1 if auto_sel else 0,
             format_func=lambda x: "Selecione..." if x == "" else x)
 
         if mot_edit_sel:
@@ -1230,109 +1234,6 @@ elif aba == "motorista":
                 st.success(f"✅ **{edit_nome}** atualizado!")
                 st.rerun()
         st.markdown("---")
-
-    anos_banco_m = set(df_all["data"].dt.year.dropna().unique().astype(int).tolist()) if not df_all.empty else set()
-    anos_list_m = [0] + sorted(anos_banco_m | set(range(2024, 2031)), reverse=True)
-
-    cf1, cf2, cf3 = st.columns([2, 1, 1])
-    with cf1:
-        mot = st.selectbox("Motorista", MOTORISTAS, key="mot_nome")
-    with cf2:
-        ano_m = st.selectbox("Ano", anos_list_m,
-            index=anos_list_m.index(datetime.now().year) if datetime.now().year in anos_list_m else 1,
-            format_func=lambda x: "Todos" if x == 0 else str(x),
-            key="mot_ano")
-    with cf3:
-        mes_m = st.selectbox("Mês", [0] + list(range(1, 13)),
-            index=datetime.now().month,
-            format_func=lambda x: "Todos" if x == 0 else MESES[x - 1],
-            key="mot_mes")
-
-    # Filtrar dados pelo período e motorista
-    df_m = df_all.copy()
-    if not df_all.empty and "data" in df_all.columns:
-        if ano_m: df_m = df_m[df_m["data"].dt.year == ano_m]
-        if mes_m: df_m = df_m[df_m["data"].dt.month == mes_m]
-    _cols = ["motorista","cliente","contrato","data","fat_bruto","chapa","adiant","folha","destino","status"]
-    if not df_m.empty and "motorista" in df_m.columns:
-        dm = df_m[df_m["motorista"] == mot]
-    else:
-        dm = pd.DataFrame(columns=_cols)
-    # Garantir colunas numéricas mesmo vazio
-    for _c in ["fat_bruto","chapa","adiant","folha"]:
-        if _c not in dm.columns:
-            dm[_c] = 0.0
-
-    periodo_m = f"{MESES[mes_m-1]}/{ano_m}" if mes_m and ano_m else \
-                (MESES[mes_m-1] if mes_m else (str(ano_m) if ano_m else "Todos os períodos"))
-
-    st.markdown(f"<p style='color:#8896A7;margin-top:-4px;font-size:13px'>📅 {periodo_m} · {len(dm)} contratos</p>", unsafe_allow_html=True)
-
-    fat = dm["fat_bruto"].sum()
-    a, f = com(mot, fat)
-    pct = min(fat / META * 100, 100)
-    cor = "#9B1C1C" if fat >= META else "#2D6BE4"
-
-    # Card perfil
-    dados_mot = st.session_state.motoristas_dados.get(mot, {})
-    cpf_mot = dados_mot.get("cpf", "—")
-    rg_mot  = dados_mot.get("rg", "—")
-    st.markdown(f"""
-    <div class='panel-card' style='margin-bottom:20px'>
-        <div style='display:flex;justify-content:space-between;align-items:flex-start'>
-            <div>
-                <div style='font-size:24px;font-weight:800;color:#1A3A5C'>{mot}</div>
-                <div style='font-size:12px;color:#8896A7;margin-top:4px'>{"Sem adiantamento · 10% folha" if mot in SEM else "Com adiantamento · 5% + 5%"}</div>
-                <div style='font-size:12px;color:#8896A7;margin-top:2px'>CPF: {cpf_mot} &nbsp;·&nbsp; RG: {rg_mot}</div>
-            </div>
-            <div style='text-align:right'>
-                <div style='font-size:28px;font-weight:800;color:{cor}'>{R_short(fat)}</div>
-                <div style='font-size:12px;color:{"#2ECC71" if fat >= META else "#E74C3C"}'>{"🏆 Meta atingida!" if fat >= META else f"Falta {R_short(META - fat)}"}</div>
-            </div>
-        </div>
-        <div style='margin-top:16px;background:#F4F6F9;border-radius:6px;height:10px'>
-            <div style='background:{cor};width:{pct}%;height:10px;border-radius:6px;transition:width 0.5s'></div>
-        </div>
-        <div style='display:flex;justify-content:space-between;margin-top:6px'>
-            <span style='font-size:11px;color:#8896A7'>R$ 0</span>
-            <span style='font-size:11px;color:#F59E0B;font-weight:600'>Meta: {R_short(META)}</span>
-            <span style='font-size:11px;color:#8896A7'>{pct:.0f}%</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Métricas
-    c1, c2, c3, c4 = st.columns(4)
-    for col, label, val, cor_m in [
-        (c1, "📄 Viagens", str(len(dm)), "#1A7FC1"),
-        (c2, "⏩ Adiantamento", R_short(a) if mot not in SEM else "N/A", "#F59E0B"),
-        (c3, "📋 Folha", R_short(f), "#8B5CF6"),
-        (c4, "🔧 Chapas", R_short(dm["chapa"].sum()), "#EC4899"),
-    ]:
-        with col:
-            st.markdown(f"""<div class='metric-card' style='padding:14px 18px'>
-                <div class='metric-label'>{label}</div>
-                <div style='font-size:22px;font-weight:800;color:{cor_m}'>{val}</div>
-            </div>""", unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    if dm.empty:
-        st.info(f"Nenhum contrato para **{mot}** em {periodo_m}.")
-    else:
-        cols = [c for c in ["contrato","cliente","data","fat_bruto","chapa","destino","status"] if c in dm.columns]
-        ds = dm[cols].copy()
-        ds["data"] = ds["data"].dt.strftime("%d/%m/%Y")
-        ds["fat_bruto"] = ds["fat_bruto"].apply(R)
-        ds["chapa"] = ds["chapa"].apply(R)
-        ds.columns = [c.upper().replace("_"," ") for c in ds.columns]
-        st.dataframe(ds, use_container_width=True, hide_index=True)
-        try:
-            excel_buf = gerar_excel(dm, f"{mot} {periodo_m}")
-            st.download_button("📊 Exportar Excel", excel_buf,
-                f"{mot.replace(' ','_')}_{periodo_m.replace('/','_')}.xlsx",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        except: pass
 
 elif aba == "comissoes":
     st.markdown("<h1 style='color:#111318'>💳 Comissões</h1>", unsafe_allow_html=True)
