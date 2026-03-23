@@ -1215,11 +1215,10 @@ elif aba == "motorista":
         sc1, sc2 = st.columns(2)
         if sc1.button("Salvar", key="btn_salvar_edit_mot", use_container_width=True):
             tipo_str = "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
-            sb_patch_safe("motoristas", f"nome=eq.{mot_edit_sel}", {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str})
+            # Se nome mudou, deleta antigo e cria novo; senão só atualiza
             if edit_nome != mot_edit_sel:
-                # Se nome mudou, upsert novo e deleta antigo
-                sb_post_safe("motoristas", {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str}, upsert=True)
                 sb_delete_safe("motoristas", f"nome=eq.{mot_edit_sel}")
+            sb_post_safe("motoristas", {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str}, upsert=True)
             st.cache_data.clear()
             st.session_state.pop("mot_edit_atual", None)
             st.success("Atualizado!")
