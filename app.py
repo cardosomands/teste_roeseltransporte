@@ -432,8 +432,15 @@ _mots_db = get_motoristas_db()
 _nomes_db = [m["nome"] for m in _mots_db] if _mots_db else []
 _dados_db = {m["nome"]: m for m in _mots_db} if _mots_db else {}
 
-# Combina base + banco
-MOTORISTAS = sorted(set(_MOTORISTAS_BASE + _nomes_db))
+# Se banco tem dados, usa só o banco (nomes atualizados)
+# Se banco vazio ou nome não está no banco, usa lista base como fallback
+if _nomes_db:
+    # Remove da base qualquer nome que foi renomeado (não está mais no banco)
+    # Mantém da base apenas os que AINDA existem no banco OU não foram importados ainda
+    MOTORISTAS = sorted(set(_nomes_db))
+else:
+    MOTORISTAS = sorted(set(_MOTORISTAS_BASE))
+
 SEM = list(set(SEM_BASE + [m["nome"] for m in _mots_db if m.get("tipo","").startswith("Sem")]))
 
 if "motoristas_extra" not in st.session_state:
@@ -1245,23 +1252,15 @@ elif aba == "motorista":
         if sc1.button("💾 Salvar", key="btn_salvar_edit_mot", use_container_width=True):
             tipo_str = "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
             payload = {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str}
-            existe = sb_get("motoristas", f"nome=eq.{mot_edit_sel}")
-            if edit_nome == mot_edit_sel:
-                if existe:
-                    sb_patch_safe("motoristas", f"nome=eq.{mot_edit_sel}", {"cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str})
-                else:
-                    sb_post_safe("motoristas", payload)
-            else:
-                # Nome mudou: atualiza/cria no banco de motoristas
-                if existe:
-                    sb_patch_safe("motoristas", f"nome=eq.{mot_edit_sel}", payload)
-                else:
-                    sb_post_safe("motoristas", payload)
-                # Atualiza todos os contratos com o nome antigo
+            # Sempre deleta o antigo e insere o novo (PK não pode ser alterada via PATCH)
+            sb_delete_safe("motoristas", f"nome=eq.{mot_edit_sel}")
+            sb_post_safe("motoristas", payload)
+            # Se nome mudou, atualiza todos os contratos
+            if edit_nome != mot_edit_sel:
                 sb_patch_safe("contratos", f"motorista=eq.{mot_edit_sel}", {"motorista": edit_nome})
             st.cache_data.clear()
             st.session_state.pop("mot_edit_atual", None)
-            st.success(f"✅ **{edit_nome}** atualizado! Contratos atualizados.")
+            st.success(f"✅ **{edit_nome}** atualizado!")
             st.rerun()
         if sc2.button("← Voltar", key="btn_voltar_edit_mot", use_container_width=True):
             st.session_state.pop("mot_edit_atual", None)
