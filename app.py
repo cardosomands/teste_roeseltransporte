@@ -1182,8 +1182,14 @@ elif aba == "motorista":
             novo_mot_m = am1.text_input("Nome", placeholder="Ex: JOAO SILVA", key="aba_mot_novo_nome").strip().upper()
             tipo_mot_m = am2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"], key="aba_mot_novo_tipo")
             bm1, bm2 = st.columns(2)
-            novo_cpf = bm1.text_input("CPF", placeholder="000.000.000-00", key="aba_mot_cpf")
-            novo_rg  = bm2.text_input("RG", placeholder="MG-00.000.000", key="aba_mot_rg")
+            cpf_raw_c = bm1.text_input("CPF (somente números)", placeholder="00000000000", key="aba_mot_cpf", max_chars=11)
+            cpf_digits_c = "".join(filter(str.isdigit, cpf_raw_c))
+            if len(cpf_digits_c) == 11:
+                novo_cpf = f"{cpf_digits_c[:3]}.{cpf_digits_c[3:6]}.{cpf_digits_c[6:9]}-{cpf_digits_c[9:]}"
+                bm1.caption(f"📄 {novo_cpf}")
+            else:
+                novo_cpf = cpf_digits_c
+            novo_rg = bm2.text_input("RG", placeholder="MG-00.000.000", key="aba_mot_rg")
             if st.button("Salvar motorista", key="aba_mot_btn_add"):
                 if not novo_mot_m:
                     st.error("Digite o nome.")
@@ -1210,22 +1216,47 @@ elif aba == "motorista":
         edit_tipo = em2.selectbox("Tipo", ["Com adiantamento (5%+5%)", "Sem adiantamento (10%)"],
             index=1 if tipo_atual.startswith("Sem") else 0, key="em_tipo")
         fm1, fm2 = st.columns(2)
-        edit_cpf = fm1.text_input("CPF", value=dados_atual.get("cpf",""), key="em_cpf")
-        edit_rg  = fm2.text_input("RG",  value=dados_atual.get("rg",""),  key="em_rg")
-        sc1, sc2 = st.columns(2)
-        if sc1.button("Salvar", key="btn_salvar_edit_mot", use_container_width=True):
+
+        # CPF com máscara automática
+        cpf_raw = fm1.text_input("CPF (somente números)", value="".join(filter(str.isdigit, dados_atual.get("cpf",""))), key="em_cpf", max_chars=11, placeholder="00000000000")
+        cpf_digits = "".join(filter(str.isdigit, cpf_raw))
+        if len(cpf_digits) == 11:
+            edit_cpf = f"{cpf_digits[:3]}.{cpf_digits[3:6]}.{cpf_digits[6:9]}-{cpf_digits[9:]}"
+            fm1.caption(f"📄 {edit_cpf}")
+        else:
+            edit_cpf = cpf_digits
+
+        edit_rg = fm2.text_input("RG", value=dados_atual.get("rg",""), key="em_rg", placeholder="Ex: MG-00.000.000")
+
+        sc1, sc2, sc3 = st.columns(3)
+        if sc1.button("💾 Salvar", key="btn_salvar_edit_mot", use_container_width=True):
             tipo_str = "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
-            # Se nome mudou, deleta antigo e cria novo; senão só atualiza
             if edit_nome != mot_edit_sel:
                 sb_delete_safe("motoristas", f"nome=eq.{mot_edit_sel}")
             sb_post_safe("motoristas", {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str}, upsert=True)
             st.cache_data.clear()
             st.session_state.pop("mot_edit_atual", None)
-            st.success("Atualizado!")
+            st.success("✅ Atualizado!")
             st.rerun()
-        if sc2.button("Voltar", key="btn_voltar_edit_mot", use_container_width=True):
+        if sc2.button("← Voltar", key="btn_voltar_edit_mot", use_container_width=True):
             st.session_state.pop("mot_edit_atual", None)
             st.rerun()
+        if sc3.button("🗑️ Excluir", key="btn_excluir_mot", use_container_width=True):
+            st.session_state["confirmar_excluir_mot"] = True
+
+        if st.session_state.get("confirmar_excluir_mot"):
+            st.warning(f"⚠️ Tem certeza que deseja excluir **{mot_edit_sel}**?")
+            cc1, cc2 = st.columns(2)
+            if cc1.button("Sim, excluir", key="btn_conf_excluir", use_container_width=True):
+                sb_delete_safe("motoristas", f"nome=eq.{mot_edit_sel}")
+                st.cache_data.clear()
+                st.session_state.pop("mot_edit_atual", None)
+                st.session_state.pop("confirmar_excluir_mot", None)
+                st.success("Motorista excluído!")
+                st.rerun()
+            if cc2.button("Cancelar", key="btn_canc_excluir", use_container_width=True):
+                st.session_state.pop("confirmar_excluir_mot", None)
+                st.rerun()
 
 elif aba == "comissoes":
     st.markdown("<h1 style='color:#111318'>💳 Comissões</h1>", unsafe_allow_html=True)
