@@ -1250,14 +1250,15 @@ elif aba == "motorista":
 
         sc1, sc2, sc3 = st.columns(3)
         if sc1.button("💾 Salvar", key="btn_salvar_edit_mot", use_container_width=True):
+            from urllib.parse import quote
             tipo_str = "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
             payload = {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str}
-            # Sempre deleta o antigo e insere o novo (PK não pode ser alterada via PATCH)
-            sb_delete_safe("motoristas", f"nome=eq.{mot_edit_sel}")
+            nome_enc = quote(mot_edit_sel)
+            sb_delete_safe("motoristas", f"nome=eq.{nome_enc}")
             sb_post_safe("motoristas", payload)
-            # Se nome mudou, atualiza todos os contratos
             if edit_nome != mot_edit_sel:
-                sb_patch_safe("contratos", f"motorista=eq.{mot_edit_sel}", {"motorista": edit_nome})
+                nome_enc2 = quote(mot_edit_sel)
+                sb_patch_safe("contratos", f"motorista=eq.{nome_enc2}", {"motorista": edit_nome})
             st.cache_data.clear()
             st.session_state.pop("mot_edit_atual", None)
             st.success(f"✅ **{edit_nome}** atualizado!")
@@ -1272,7 +1273,8 @@ elif aba == "motorista":
             st.warning(f"⚠️ Tem certeza que deseja excluir **{mot_edit_sel}**?")
             cc1, cc2 = st.columns(2)
             if cc1.button("Sim, excluir", key="btn_conf_excluir", use_container_width=True):
-                sb_delete_safe("motoristas", f"nome=eq.{mot_edit_sel}")
+                from urllib.parse import quote
+                sb_delete_safe("motoristas", f"nome=eq.{quote(mot_edit_sel)}")
                 st.cache_data.clear()
                 st.session_state.pop("mot_edit_atual", None)
                 st.session_state.pop("confirmar_excluir_mot", None)
