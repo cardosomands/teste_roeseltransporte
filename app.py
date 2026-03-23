@@ -1231,12 +1231,24 @@ elif aba == "motorista":
         sc1, sc2, sc3 = st.columns(3)
         if sc1.button("💾 Salvar", key="btn_salvar_edit_mot", use_container_width=True):
             tipo_str = "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
-            if edit_nome != mot_edit_sel:
-                sb_delete_safe("motoristas", f"nome=eq.{mot_edit_sel}")
-            sb_post_safe("motoristas", {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str}, upsert=True)
+            payload = {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str}
+            existe = sb_get("motoristas", f"nome=eq.{mot_edit_sel}")
+            if edit_nome == mot_edit_sel:
+                if existe:
+                    sb_patch_safe("motoristas", f"nome=eq.{mot_edit_sel}", {"cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str})
+                else:
+                    sb_post_safe("motoristas", payload)
+            else:
+                # Nome mudou: atualiza/cria no banco de motoristas
+                if existe:
+                    sb_patch_safe("motoristas", f"nome=eq.{mot_edit_sel}", payload)
+                else:
+                    sb_post_safe("motoristas", payload)
+                # Atualiza todos os contratos com o nome antigo
+                sb_patch_safe("contratos", f"motorista=eq.{mot_edit_sel}", {"motorista": edit_nome})
             st.cache_data.clear()
             st.session_state.pop("mot_edit_atual", None)
-            st.success("✅ Atualizado!")
+            st.success(f"✅ **{edit_nome}** atualizado! Contratos atualizados.")
             st.rerun()
         if sc2.button("← Voltar", key="btn_voltar_edit_mot", use_container_width=True):
             st.session_state.pop("mot_edit_atual", None)
