@@ -421,13 +421,25 @@ Retorne SOMENTE o JSON."""
 # ── CONSTANTES ─────────────────────────────────────────────────────
 MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"]
 META = 127000
-SEM = ["FLAVIO","MARIO","ORANGE CARVALHO","WEMERSON CARLOS"]  # motoristas sem adiantamento
+SEM_BASE = ["FLAVIO","MARIO","ORANGE CARVALHO","WEMERSON CARLOS"]  # motoristas sem adiantamento base
 _MOTORISTAS_BASE = ["ALEX","DAIVDSON","ELEXSANDRO","GEOVANE","FLAVIO","HEBERT","JOSÉ EDUARDO","LUIZ OTAVIO","MARIO","REINALDO ADRIANO","ROBINSON TAVARES","WAGNER","WEMERSON CARLOS","ORANGE CARVALHO"]
+
+@st.cache_data(ttl=30)
+def get_motoristas_db():
+    return sb_get("motoristas", "order=nome.asc") or []
+
+_mots_db = get_motoristas_db()
+_nomes_db = [m["nome"] for m in _mots_db] if _mots_db else []
+_dados_db = {m["nome"]: m for m in _mots_db} if _mots_db else {}
+
+# Combina base + banco
+MOTORISTAS = sorted(set(_MOTORISTAS_BASE + _nomes_db))
+SEM = list(set(SEM_BASE + [m["nome"] for m in _mots_db if m.get("tipo","").startswith("Sem")]))
+
 if "motoristas_extra" not in st.session_state:
     st.session_state.motoristas_extra = []
 if "motoristas_dados" not in st.session_state:
-    st.session_state.motoristas_dados = {}  # {nome: {cpf, rg, tipo}}
-MOTORISTAS = sorted(set(_MOTORISTAS_BASE + st.session_state.motoristas_extra))
+    st.session_state.motoristas_dados = _dados_db
 CLIENTES = ["SADA","AUTOPORT","DACUNHA","BRAZUL","VIX","TRANSAUTO","TRANSZERO","OUTRO"]
 STATUS = ["ABERTO","ADIANTADO","PENDENTE","FECHADO"]
 STATUS_P = ["QUALIFICADO","EM ANÁLISE","APROVADO","PAGO","NÃO APROVADO"]
@@ -1178,15 +1190,11 @@ elif aba == "motorista":
                 elif novo_mot_m in MOTORISTAS:
                     st.warning(f"ja existe.")
                 else:
-                    st.session_state.motoristas_extra.append(novo_mot_m)
-                    st.session_state.motoristas_dados[novo_mot_m] = {
-                        "cpf": novo_cpf, "rg": novo_rg,
-                        "tipo": "Sem adiantamento" if tipo_mot_m.startswith("Sem") else "Com adiantamento"
-                    }
-                    if tipo_mot_m.startswith("Sem") and novo_mot_m not in SEM:
-                        SEM.append(novo_mot_m)
+                    tipo_str = "Sem adiantamento" if tipo_mot_m.startswith("Sem") else "Com adiantamento"
+                    sb_post_safe("motoristas", {"nome": novo_mot_m, "cpf": novo_cpf, "rg": novo_rg, "tipo": tipo_str}, upsert=True)
+                    st.cache_data.clear()
                     st.session_state["show_cad_mot"] = False
-                    st.success(f"Cadastrado!")
+                    st.success("Cadastrado!")
                     st.rerun()
 
         if escolhido:
@@ -1206,18 +1214,13 @@ elif aba == "motorista":
         edit_rg  = fm2.text_input("RG",  value=dados_atual.get("rg",""),  key="em_rg")
         sc1, sc2 = st.columns(2)
         if sc1.button("Salvar", key="btn_salvar_edit_mot", use_container_width=True):
-            novo_dados = {"cpf": edit_cpf, "rg": edit_rg,
-                "tipo": "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"}
-            st.session_state.motoristas_dados[edit_nome] = novo_dados
-            if edit_tipo.startswith("Sem"):
-                if edit_nome not in SEM: SEM.append(edit_nome)
-            else:
-                if edit_nome in SEM: SEM.remove(edit_nome)
+            tipo_str = "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
+            sb_patch_safe("motoristas", f"nome=eq.{mot_edit_sel}", {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str})
             if edit_nome != mot_edit_sel:
-                if mot_edit_sel in st.session_state.motoristas_extra:
-                    st.session_state.motoristas_extra[st.session_state.motoristas_extra.index(mot_edit_sel)] = edit_nome
-                st.session_state.motoristas_dados.pop(mot_edit_sel, None)
-                st.session_state.motoristas_dados[edit_nome] = novo_dados
+                # Se nome mudou, upsert novo e deleta antigo
+                sb_post_safe("motoristas", {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str}, upsert=True)
+                sb_delete_safe("motoristas", f"nome=eq.{mot_edit_sel}")
+            st.cache_data.clear()
             st.session_state.pop("mot_edit_atual", None)
             st.success("Atualizado!")
             st.rerun()
