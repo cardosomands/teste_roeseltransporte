@@ -1192,7 +1192,7 @@ elif aba == "motorista":
             if st.button("📥 Importar todos os motoristas para o banco", use_container_width=True):
                 for m in faltando:
                     tipo = "Sem adiantamento" if m in SEM_BASE else "Com adiantamento"
-                    sb_post_safe("motoristas", {"nome": m, "cpf": "", "rg": "", "tipo": tipo})
+                    sb_post_safe("motoristas", {"id": str(uuid.uuid4()), "nome": m, "cpf": "", "rg": "", "tipo": tipo})
                 st.cache_data.clear()
                 st.success(f"✅ {len(faltando)} motoristas importados!")
                 st.rerun()
@@ -1217,7 +1217,7 @@ elif aba == "motorista":
                     st.warning(f"ja existe.")
                 else:
                     tipo_str = "Sem adiantamento" if tipo_mot_m.startswith("Sem") else "Com adiantamento"
-                    sb_post_safe("motoristas", {"nome": novo_mot_m, "cpf": novo_cpf, "rg": novo_rg, "tipo": tipo_str}, upsert=True)
+                    sb_post_safe("motoristas", {"id": str(uuid.uuid4()), "nome": novo_mot_m, "cpf": novo_cpf, "rg": novo_rg, "tipo": tipo_str})
                     st.cache_data.clear()
                     st.session_state["show_cad_mot"] = False
                     st.success("Cadastrado!")
@@ -1230,6 +1230,7 @@ elif aba == "motorista":
     else:
         dados_atual = st.session_state.motoristas_dados.get(mot_edit_sel, {})
         tipo_atual  = dados_atual.get("tipo", "Com adiantamento")
+        mot_id      = dados_atual.get("id", None)
         st.markdown(f"**Editando: {mot_edit_sel}**")
         em1, em2 = st.columns([3, 2])
         edit_nome = em1.text_input("Nome", value=mot_edit_sel, key="em_nome").strip().upper()
@@ -1237,7 +1238,6 @@ elif aba == "motorista":
             index=1 if tipo_atual.startswith("Sem") else 0, key="em_tipo")
         fm1, fm2 = st.columns(2)
 
-        # CPF com máscara automática
         cpf_raw = fm1.text_input("CPF (somente números)", value="".join(filter(str.isdigit, dados_atual.get("cpf",""))), key="em_cpf", max_chars=11, placeholder="00000000000")
         cpf_digits = "".join(filter(str.isdigit, cpf_raw))
         if len(cpf_digits) == 11:
@@ -1250,19 +1250,23 @@ elif aba == "motorista":
 
         sc1, sc2, sc3 = st.columns(3)
         if sc1.button("💾 Salvar", key="btn_salvar_edit_mot", use_container_width=True):
-            from urllib.parse import quote
             tipo_str = "Sem adiantamento" if edit_tipo.startswith("Sem") else "Com adiantamento"
-            payload = {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str}
-            nome_enc = quote(mot_edit_sel)
-            sb_delete_safe("motoristas", f"nome=eq.{nome_enc}")
-            sb_post_safe("motoristas", payload)
+            if mot_id:
+                # Usa ID — nunca duplica
+                sb_patch_safe("motoristas", f"id=eq.{mot_id}", {
+                    "nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str
+                })
+            else:
+                # Motorista ainda não está no banco — insere
+                sb_post_safe("motoristas", {"nome": edit_nome, "cpf": edit_cpf, "rg": edit_rg, "tipo": tipo_str})
+            # Se nome mudou, atualiza contratos
             if edit_nome != mot_edit_sel:
-                nome_enc2 = quote(mot_edit_sel)
-                sb_patch_safe("contratos", f"motorista=eq.{nome_enc2}", {"motorista": edit_nome})
+                sb_patch_safe("contratos", f"motorista=eq.{mot_edit_sel}", {"motorista": edit_nome})
             st.cache_data.clear()
             st.session_state.pop("mot_edit_atual", None)
             st.success(f"✅ **{edit_nome}** atualizado!")
             st.rerun()
+
         if sc2.button("← Voltar", key="btn_voltar_edit_mot", use_container_width=True):
             st.session_state.pop("mot_edit_atual", None)
             st.rerun()
@@ -1273,8 +1277,8 @@ elif aba == "motorista":
             st.warning(f"⚠️ Tem certeza que deseja excluir **{mot_edit_sel}**?")
             cc1, cc2 = st.columns(2)
             if cc1.button("Sim, excluir", key="btn_conf_excluir", use_container_width=True):
-                from urllib.parse import quote
-                sb_delete_safe("motoristas", f"nome=eq.{quote(mot_edit_sel)}")
+                if mot_id:
+                    sb_delete_safe("motoristas", f"id=eq.{mot_id}")
                 st.cache_data.clear()
                 st.session_state.pop("mot_edit_atual", None)
                 st.session_state.pop("confirmar_excluir_mot", None)
