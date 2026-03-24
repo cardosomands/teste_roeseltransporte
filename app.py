@@ -391,9 +391,25 @@ def ler_contrato_ia(img_bytes, media_type="image/jpeg"):
     if not ANTHROPIC_KEY:
         return None, "⚠️ Chave ANTHROPIC_KEY não configurada nos Secrets do Streamlit."
     b64 = base64.b64encode(img_bytes).decode("utf-8")
-    prompt = """Analise este contrato de transporte e retorne APENAS um JSON puro, sem markdown, sem explicação:
-{"cliente":"AUTOPORT","motorista":"NOME EM MAIUSCULAS","placa":"ABC1234","frota":"","contrato":"numero","data":"DD/MM/AAAA","fat_bruto":0.0,"chapa":0.0,"destino":"Cidade/UF","qtd_veiculos":0,"dt_pagamento":"DD/MM/AAAA"}
-Retorne SOMENTE o JSON."""
+    prompt = """Analise este contrato de transporte rodoviário e retorne APENAS um JSON puro, sem markdown, sem explicação.
+
+Extraia os seguintes campos:
+- contrato: número do contrato (ex: 285783-17)
+- data: data do contrato no formato DD/MM/AAAA
+- cliente: nome curto da empresa contratante (ex: AUTOPORT)
+- cliente_nome_completo: razão social completa da empresa contratante (ex: AUTOPORT TRANSPORTES E LOGISTICA LTDA)
+- cnpj: CNPJ da empresa contratante (ex: 07.677.731/0017-82)
+- frota: número da frota do veículo
+- placa: placa do caminhão (ex: TDJ3C51)
+- qtd_veiculos: quantidade de veículos transportados
+- origem: cidade/UF de origem (ex: Igarapé/MG)
+- destino: cidade/UF de destino final (ex: Serra/ES)
+- motorista: nome do motorista/preposto em MAIUSCULAS
+- fat_bruto: valor do frete contratado (número)
+- chapa: 0.0
+
+Retorne SOMENTE este JSON:
+{"contrato":"","data":"DD/MM/AAAA","cliente":"","cliente_nome_completo":"","cnpj":"","frota":"","placa":"","qtd_veiculos":0,"origem":"","destino":"","motorista":"","fat_bruto":0.0,"chapa":0.0}"""
     is_pdf = media_type == "application/pdf"
     hdrs = {"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"}
     if is_pdf: hdrs["anthropic-beta"] = "pdfs-2024-09-25"
@@ -975,6 +991,9 @@ elif aba == "novo":
         chapa_v = c8.number_input("Chapa (R$)", float(ia.get("chapa",0)), step=50.0, format="%.2f")
         qtd     = c9.number_input("Qtd Veículos", int(ia.get("qtd_veiculos",0)), step=1)
         st.markdown("**Informações Adicionais**")
+        cn1, cn2 = st.columns(2)
+        cliente_completo = cn1.text_input("Razão Social do Cliente", ia.get("cliente_nome_completo","")).upper()
+        cnpj_v = cn2.text_input("CNPJ", ia.get("cnpj",""))
         c10,c11,c11b = st.columns(3)
         orig   = c10.text_input("Origem", ia.get("origem","")).upper()
         dest   = c11.text_input("Destino", ia.get("destino","")).upper()
@@ -1003,6 +1022,7 @@ elif aba == "novo":
                 novo = {"id": str(uuid.uuid4()), "motorista": mot_final, "cliente": cli, "placa": placa,
                         "frota": frota, "contrato": cont, "data": str(data_v), "fat_bruto": fat_v,
                         "chapa": chapa_v, "origem": orig, "destino": dest, "qtd_veiculos": int(qtd),
+                        "cliente_nome_completo": cliente_completo, "cnpj": cnpj_v,
                         "adiantamento_pago": adpago,
                         "dt_pagamento": str(dt_pag) if dt_pag else None,
                         "status": sts, "obs": obs}
