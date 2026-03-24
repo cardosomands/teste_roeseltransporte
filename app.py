@@ -917,6 +917,10 @@ elif aba == "novo":
         st.warning("Sem permissão para cadastrar contratos.")
         st.stop()
 
+    col_back, col_title = st.columns([1, 5])
+    if col_back.button("← Voltar", key="btn_voltar_novo"):
+        st.session_state["aba"] = "visao"
+        st.rerun()
     st.markdown("<h1 style='color:#111318;font-size:22px;font-weight:700;margin-bottom:2px'>Novo Contrato</h1><p style='color:#9CA3AF;font-size:13px;margin-top:0'>Cadastre um novo contrato de transporte</p>", unsafe_allow_html=True)
 
     if st.button("Novo Contrato", key="btn_toggle_ia"):
