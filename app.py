@@ -1184,19 +1184,6 @@ elif aba == "motorista":
         if top2.button("Cadastrar motorista", key="btn_toggle_cad_mot", use_container_width=True):
             st.session_state["show_cad_mot"] = not st.session_state.get("show_cad_mot", False)
 
-        # Botão para sincronizar todos da lista base
-        mots_no_banco = [m["nome"] for m in (sb_get("motoristas") or [])]
-        faltando = [m for m in _MOTORISTAS_BASE if m not in mots_no_banco]
-        if faltando:
-            st.info(f"ℹ️ {len(faltando)} motorista(s) ainda não estão no banco. Clique para importar todos e depois edite com o nome completo.")
-            if st.button("📥 Importar todos os motoristas para o banco", use_container_width=True):
-                for m in faltando:
-                    tipo = "Sem adiantamento" if m in SEM_BASE else "Com adiantamento"
-                    sb_post_safe("motoristas", {"id": str(uuid.uuid4()), "nome": m, "cpf": "", "rg": "", "tipo": tipo})
-                st.cache_data.clear()
-                st.success(f"✅ {len(faltando)} motoristas importados!")
-                st.rerun()
-
         if st.session_state.get("show_cad_mot", False):
             am1, am2 = st.columns([3, 2])
             novo_mot_m = am1.text_input("Nome", placeholder="Ex: JOAO SILVA", key="aba_mot_novo_nome").strip().upper()
@@ -1228,7 +1215,9 @@ elif aba == "motorista":
             st.rerun()
 
     else:
-        dados_atual = st.session_state.motoristas_dados.get(mot_edit_sel, {})
+        # Busca dados frescos do banco para garantir que tem o id
+        _fresh = sb_get("motoristas", f"nome=eq.{mot_edit_sel}")
+        dados_atual = _fresh[0] if _fresh else {}
         tipo_atual  = dados_atual.get("tipo", "Com adiantamento")
         mot_id      = dados_atual.get("id", None)
         st.markdown(f"**Editando: {mot_edit_sel}**")
