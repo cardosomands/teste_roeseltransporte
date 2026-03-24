@@ -404,12 +404,14 @@ Extraia os seguintes campos:
 - qtd_veiculos: quantidade de veículos transportados
 - origem: cidade/UF de origem (ex: Igarapé/MG)
 - destino: cidade/UF de destino final (ex: Serra/ES)
-- motorista: nome do motorista/preposto em MAIUSCULAS
+- motorista: nome do motorista/preposto em MAIUSCULAS (ex: GEOVANE TEIXEIRA DE ASSIS)
+- motorista_cpf: CPF do motorista (ex: 111.367.537-37)
+- motorista_rg: RG do motorista (ex: 208620179)
 - fat_bruto: valor do frete contratado (número)
 - chapa: 0.0
 
 Retorne SOMENTE este JSON:
-{"contrato":"","data":"DD/MM/AAAA","cliente":"","cliente_nome_completo":"","cnpj":"","frota":"","placa":"","qtd_veiculos":0,"origem":"","destino":"","motorista":"","fat_bruto":0.0,"chapa":0.0}"""
+{"contrato":"","data":"DD/MM/AAAA","cliente":"","cliente_nome_completo":"","cnpj":"","frota":"","placa":"","qtd_veiculos":0,"origem":"","destino":"","motorista":"","motorista_cpf":"","motorista_rg":"","fat_bruto":0.0,"chapa":0.0}"""
     is_pdf = media_type == "application/pdf"
     hdrs = {"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"}
     if is_pdf: hdrs["anthropic-beta"] = "pdfs-2024-09-25"
@@ -994,6 +996,9 @@ elif aba == "novo":
         cn1, cn2 = st.columns(2)
         cliente_completo = cn1.text_input("Razão Social do Cliente", ia.get("cliente_nome_completo","")).upper()
         cnpj_v = cn2.text_input("CNPJ", ia.get("cnpj",""))
+        mc1, mc2 = st.columns(2)
+        mot_cpf = mc1.text_input("CPF do Motorista", ia.get("motorista_cpf",""))
+        mot_rg  = mc2.text_input("RG do Motorista",  ia.get("motorista_rg",""))
         c10,c11,c11b = st.columns(3)
         orig   = c10.text_input("Origem", ia.get("origem","")).upper()
         dest   = c11.text_input("Destino", ia.get("destino","")).upper()
@@ -1027,6 +1032,14 @@ elif aba == "novo":
                         "dt_pagamento": str(dt_pag) if dt_pag else None,
                         "status": sts, "obs": obs}
                 if sb_post_safe("contratos", novo):
+                    # Atualiza CPF/RG do motorista no banco se foram lidos pela IA
+                    if mot_cpf or mot_rg:
+                        mot_db = sb_get("motoristas", f"nome=eq.{mot_final}")
+                        if mot_db:
+                            patch_data = {}
+                            if mot_cpf: patch_data["cpf"] = mot_cpf
+                            if mot_rg:  patch_data["rg"]  = mot_rg
+                            sb_patch_safe("motoristas", f"id=eq.{mot_db[0]['id']}", patch_data)
                     st.success(f"✅ Contrato {cont} salvo!")
                     st.cache_data.clear()
                     st.session_state.pop("ia", None)
