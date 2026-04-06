@@ -1,0 +1,7 @@
+cd roesel-app-python-react/backend
+git init
+git add .
+git commit -m "primeiro commit backend"
+git branch -M main
+git remote add origin https://github.com/cardosomands/roesel-backend.git
+git push -u origin main
